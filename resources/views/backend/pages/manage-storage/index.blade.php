@@ -37,7 +37,9 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center gap-1">
                     <h4 class="card-title flex-grow-1">Manage Storage</h4>
-
+                    <a href="javascript:void(0)" data-uploadimaghe-popup="true" data-size="lg" data-title="Magic AI Generate Image " data-url="{{ route('magic-ai-image-generator.create') }}" data-bs-toggle="tooltip" class="btn btn-sm btn-orange" data-bs-original-title="Magic AI Generate Image ">
+                        Magic AI Generate Image 
+                    </a>
                     <a href="javascript:void(0)" data-uploadimaghe-popup="true" data-size="lg" data-title="Upload Image" data-url="{{ route('manage-storage.create') }}" data-bs-toggle="tooltip" class="btn btn-sm btn-info" data-bs-original-title="Upload Image">
                         Upload Images
                     </a>
