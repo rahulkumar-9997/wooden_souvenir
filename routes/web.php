@@ -18,6 +18,7 @@ use App\Http\Controllers\Backend\ProductsController;
 use App\Http\Controllers\Backend\DatabaseController;
 use App\Http\Controllers\Backend\BannerController;
 use App\Http\Controllers\Backend\StorageController;
+use App\Http\Controllers\Backend\RelatedProductController;
 
 Route::prefix('admin')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm']);
@@ -147,4 +148,5 @@ Route::group(['middleware' => ['auth']], function() {
     Route::post('manage-storage/submit', [StorageController::class, 'store'])->name('manage-storage.submit');
     Route::delete('manage-storage/{id}',  [StorageController::class, 'destroy'])->name('manage-storage.delete');
     Route::post('mapped-image-to-product/submit', [StorageController::class, 'mappedImageToProductSubmit'])->name('mapped-image-to-product.submit');
+    Route::Resource('manage-related-product', RelatedProductController::class);
 });
