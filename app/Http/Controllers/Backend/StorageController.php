@@ -68,7 +68,7 @@ class StorageController extends Controller
                 $files = $request->file('storage_images');
                 foreach ($files as $key => $file) {
                     $timestamp = round(microtime(true) * 1000);
-                    $image_file_name = 'polymer' . $timestamp;
+                    $image_file_name = 'wooden-souvenir' . $timestamp;
                     $baseName = ImageHelper::generateFileName($image_file_name);
                     $webpImageFile = ImageHelper::uploadSingleImageWebpOnly(
                         $file,

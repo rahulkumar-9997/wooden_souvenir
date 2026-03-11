@@ -546,7 +546,7 @@ class AttributeController extends Controller
             }
             if ($request->hasFile('image')) {
                 $image = $request->file('image');
-                $ImageName = 'onlypolymer' . $attrValue->slug . '-' . uniqid();
+                $ImageName = 'wooden-souvenir' . $attrValue->slug . '-' . uniqid();
                 $baseName = ImageHelper::generateFileName($ImageName);
                 $attrValue->images = ImageHelper::uploadImage(
                     $image,
