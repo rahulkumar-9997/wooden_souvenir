@@ -10802,7 +10802,8 @@ textarea.form-control-lg {
 /* rtl:end:remove */
 .text-primary {
   --bs-text-opacity: 1;
-  color: var(--bs-white) !important;
+  color:var(--bs-body-color)!important;
+  font-size: 16px;
 }
 
 .text-secondary {

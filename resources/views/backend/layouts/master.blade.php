@@ -13,9 +13,8 @@
                 @include('backend.layouts.footer')
             </div>
         </div>
-        @include('backend.layouts.footer-js')
-        
+        @include('backend.layouts.footer-js')        
         @stack('scripts')
-        <script src="{{asset('backend/assets/js/common-ajax.js')}}?v=1.1" type="text/javascript"></script>
+        <script src="{{asset('backend/assets/js/common-ajax.js')}}?v={{ env('ASSET_VERSION', '1.0') }}" type="text/javascript"></script>
     </body>
 </html>
