@@ -151,4 +151,5 @@ Route::group(['middleware' => ['auth']], function() {
     Route::post('mapped-image-to-product/submit', [StorageController::class, 'mappedImageToProductSubmit'])->name('mapped-image-to-product.submit');
     Route::Resource('manage-related-product', RelatedProductController::class);
     Route::Resource('magic-ai-image-generator', MagicAiImageGeneratorController::class);
+    Route::resource('manage-banner', BannerController::class);
 });

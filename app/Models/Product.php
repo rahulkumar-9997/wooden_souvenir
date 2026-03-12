@@ -142,6 +142,10 @@ class Product extends Model
     {
         return $this->hasMany(ProductReview::class)->where('status', '1');
     }
+    public function banners()
+    {
+        return $this->belongsToMany(Banner::class, 'banner_product');
+    }
     
     /** 
      * Write code on Method

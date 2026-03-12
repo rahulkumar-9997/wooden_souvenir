@@ -11,11 +11,10 @@ class Banner extends Model
     protected $table = 'banners';
     protected $fillable = [
         'title',
+        'content',
         'image_path_desktop',
         'image_path_mobile',
-        'link_desktop',
-        'link_mobile',
-        'status',
+        'status'
     ];
     /**
      * The attributes that should be cast to native types.
@@ -25,4 +24,8 @@ class Banner extends Model
     protected $casts = [
         'status' => 'boolean',
     ];
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'banner_product');
+    }
 }
