@@ -140,16 +140,17 @@ Route::group(['middleware' => ['auth']], function() {
     Route::post('product-update-all', [ProductsController::class, 'productMultipleUpdatePageSubmit'])->name('product-update-all');    
     Route::POST('/product-update-gst/store', [ProductsController::class, 'updateHSNCodeGstFormSubmit'])->name('product-update-gst.store');
     Route::get('/autocomplete/products-storage', [ProductsController::class, 'autocompleteProductsStorage'])->name('autocomplete.products-storage');
-    /**Product route */       
-    /**Banner route */
-    Route::resource('manage-banner', BannerController::class);    
+    /**Product route */  
     Route::get('manage-storage', [StorageController::class, 'index'])->name('manage-storage');
     Route::get('manage-storage/create', [StorageController::class, 'create'])->name('manage-storage.create');
     Route::post('manage-storage/comment/submit/{id}', [StorageController::class, 'storageCommentSubmit'])->name('manage-storage.comment.submit');
     Route::post('manage-storage/submit', [StorageController::class, 'store'])->name('manage-storage.submit');
     Route::delete('manage-storage/{id}',  [StorageController::class, 'destroy'])->name('manage-storage.delete');
     Route::post('mapped-image-to-product/submit', [StorageController::class, 'mappedImageToProductSubmit'])->name('mapped-image-to-product.submit');
-    Route::Resource('manage-related-product', RelatedProductController::class);
-    Route::Resource('magic-ai-image-generator', MagicAiImageGeneratorController::class);
+    Route::Resource('manage-related-product', RelatedProductController::class);    
     Route::resource('manage-banner', BannerController::class);
+    Route::get('/product-autocomplete', [ProductsController::class,'productAutocomplete'])->name('product.autocomplete');
+
+
+    Route::Resource('magic-ai-image-generator', MagicAiImageGeneratorController::class);
 });

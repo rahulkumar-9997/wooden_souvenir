@@ -16,11 +16,8 @@
          <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center gap-1">
                <h4 class="card-title flex-grow-1">Banner List</h4>
-               <a href="javascript:void(0)" 
-                  data-add-banner-popup="true" 
-                  data-size="lg" 
+               <a href="{{ route('manage-banner.create') }}"                   
                   data-title="Add New Banner" 
-                  data-url="{{ route('manage-banner.create') }}" 
                   data-bs-toggle="tooltip" 
                   title="Add New Banner" 
                   class="btn btn-sm btn-primary">
@@ -86,8 +83,6 @@
 <!-- modal--->
 @endsection
 @push('scripts')
-
-<script src="{{asset('backend/assets/js/pages/backBanner.js')}}?v={{ env('ASSET_VERSION', '1.0.0') }}" type="text/javascript"></script> 
 <script>
    $(document).ready(function() {
       $('.show_confirm').click(function(event) {

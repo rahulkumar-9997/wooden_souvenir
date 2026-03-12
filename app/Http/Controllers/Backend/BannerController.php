@@ -14,50 +14,8 @@ class BannerController extends Controller
         return view('backend.pages.manage-banner.index', compact('banner'));
     }
 
-    public function create(Request $request){
-        $form ='
-        <div class="modal-body">
-            <form method="POST" action="'.route('manage-banner.store').'" accept-charset="UTF-8" enctype="multipart/form-data" id="addNewBanner">
-                '.csrf_field().'
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="banner_title" class="form-label">Banner Title *</label>
-                            <input type="text" id="banner_title" name="banner_title" class="form-control">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="banner_image" class="form-label">Banner Image *</label>
-                            <input type="file" id="banner_image" name="banner_image" class="form-control">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="banner_path" class="form-label">Banner Path</label>
-                            <input type="text" id="banner_path" name="banner_path" class="form-control">
-                        </div>
-                    </div>
-                    
-                    <!--<div class="mb-3 col-md-12">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" role="switch" id="status" name="status">
-                            <label class="form-check-label" for="status">Status</label>
-                        </div>
-                    </div>-->
-                    
-                    <div class="modal-footer pb-0">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Save changes</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-        ';
-        return response()->json([
-            'message' => 'Banner Form created successfully',
-            'form' => $form,
-        ]);
+    public function create(){
+        return view('backend.pages.manage-banner.create');        
     }
 
     public function store(Request $request){

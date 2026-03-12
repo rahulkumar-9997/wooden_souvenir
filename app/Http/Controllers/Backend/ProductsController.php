@@ -1713,5 +1713,21 @@ class ProductsController extends Controller
         return response()->json($products);
 
     }
+
+    public function productAutocomplete(Request $request)
+    {
+        $products = Product::where('title', 'LIKE', '%'.$request->search.'%')
+            ->select('id','title')
+            ->limit(10)
+            ->get();
+        $data = [];
+        foreach ($products as $product) {
+            $data[] = [
+                'id' => $product->id,
+                'text' => $product->title
+            ];
+        }
+        return response()->json($data);
+    }
     
 }    
