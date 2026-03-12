@@ -17,7 +17,7 @@
                            <div class="row">
                               <div class="col-3">
                                  <div class="avatar-md bg-soft-primary rounded">
-                                    <i class="bx bx-box avatar-title fs-24 text-primary"></i>
+                                    <i class="bx bx-box avatar-title fs-24 text-primary-tw"></i>
                                  </div>
                               </div>
                               <!-- end col -->
@@ -41,7 +41,7 @@
                            <div class="row">
                               <div class="col-3">
                                  <div class="avatar-md bg-soft-primary rounded">
-                                    <i class="bx bx-cart avatar-title fs-24 text-primary"></i>
+                                    <i class="bx bx-cart avatar-title fs-24 text-primary-tw"></i>
                                  </div>
                               </div>
                               <!-- end col -->
@@ -65,7 +65,7 @@
                            <div class="row">
                               <div class="col-3">
                                  <div class="avatar-md bg-soft-primary rounded">
-                                    <i class="bx bxs-extension avatar-title fs-24 text-primary"></i>
+                                    <i class="bx bxs-extension avatar-title fs-24 text-primary-tw"></i>
                                  </div>
                               </div>
                               <!-- end col -->
@@ -89,7 +89,7 @@
                            <div class="row">
                               <div class="col-3">
                                  <div class="avatar-md bg-soft-primary rounded">
-                                    <i class="bx bx-capsule avatar-title text-primary fs-24"></i>
+                                    <i class="bx bx-capsule avatar-title text-primary-tw fs-24"></i>
                                  </div>
                               </div>
                               <!-- end col -->
@@ -125,7 +125,7 @@
                                  <div class="row">
                                     <div class="col-3">
                                        <div class="avatar-md bg-soft-primary rounded">
-                                          <i class="{{ $statusIcons[$status->id] ?? 'bx bx-question-mark' }} avatar-title text-primary fs-24"></i>
+                                          <i class="{{ $statusIcons[$status->id] ?? 'bx bx-question-mark' }} avatar-title text-primary-tw fs-24"></i>
                                        </div>
                                     </div>
                                     <div class="col-9 text-end">
@@ -159,7 +159,7 @@
                                  <div class="row">
                                     <div class="col-3">
                                        <div class="avatar-md bg-soft-primary rounded">
-                                          <i class="{{ $counterIcons[$counter->id] ?? 'bx bx-question-mark' }} avatar-title text-primary fs-24"></i>
+                                          <i class="{{ $counterIcons[$counter->id] ?? 'bx bx-question-mark' }} avatar-title text-primary-tw fs-24"></i>
                                        </div>
                                     </div>
                                     <div class="col-9 text-end">

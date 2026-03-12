@@ -10805,6 +10805,9 @@ textarea.form-control-lg {
   color:var(--bs-body-color)!important;
   font-size: 16px;
 }
+.text-primary-tw{
+  color:#ffff!important;
+}
 
 .text-secondary {
   --bs-text-opacity: 1;

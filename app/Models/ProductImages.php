@@ -19,4 +19,9 @@ class ProductImages extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    public function getThumbImages()
+    {
+        return asset('storage/images/product/thumb/'.$this->image_path);
+    }
 }

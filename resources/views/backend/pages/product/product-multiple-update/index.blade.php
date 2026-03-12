@@ -80,7 +80,7 @@
                 </div>
                 <div class="card-body">
                     <div class="multiple_update" id="multiple_update">
-                        @include('backend.product.product-multiple-update.partials.list-table', ['criteria' => $criteria, 'products' =>$products])
+                        @include('backend.pages.product.product-multiple-update.partials.list-table', ['criteria' => $criteria, 'products' =>$products])
                     </div>
                 </div>
             </div>

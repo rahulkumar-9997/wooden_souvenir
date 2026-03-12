@@ -87,8 +87,8 @@ class ProductsController extends Controller
                
     }
 
-    public function create(){ 
-        $categoryId = request()->get('category');
+    public function create(Request $request){ 
+        $categoryId = request()->query('category');
         // $attributesWithValues = UpdateHsnGstWithAttributes::where('category_id', $categoryId)
         // ->with(['attribute', 'attribute.AttributesValues', 'attribute.AttributesValues.hsnGst'])
         // ->get();
@@ -102,8 +102,8 @@ class ProductsController extends Controller
         $data['product_attributes_list'] = Attribute::whereNotIn('title', $excludedTitles)
             ->orderBy('title', 'asc')->get();
         $data['product_category_list'] = Category::where('status', '=', 'on')->orderBy('title', 'asc')->get();
-        $data['brand_list'] = Brand::where('status', '=', 'on')->orderBy('title', 'asc')->get();
-        $data['label_list'] = Label::where('status', '=', 'on')->orderBy('title', 'asc')->get();
+        $data['brand_list'] = Brand::where('status', '=', '1')->orderBy('title', 'asc')->get();
+        $data['label_list'] = Label::where('status', '=', '1')->orderBy('title', 'asc')->get();
         return view('backend.pages.product.create', compact('data', 'attributesWithValues'));
     } 
 

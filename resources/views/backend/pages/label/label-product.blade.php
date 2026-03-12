@@ -49,7 +49,7 @@
                 <div class="card-body">
                     <div class="table-responsive" id="label_product_list">
                         @if (isset($productsWithLabel))
-                            @include('backend.label.partials.product-label-partials', ['productsWithLabel' => $productsWithLabel])
+                            @include('backend.pages.label.partials.product-label-partials', ['productsWithLabel' => $productsWithLabel])
                         @endif
                     </div>
                 </div>
