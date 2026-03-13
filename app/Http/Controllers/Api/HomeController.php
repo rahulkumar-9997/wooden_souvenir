@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Attribute_values;
 use App\Models\Attribute;
 use App\Models\Banner;
+use App\Models\Client;
 use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
@@ -146,6 +147,7 @@ class HomeController extends Controller
             'data' => $products
         ]);
     }
+
     public function banner()
     {
         $banners = Cache::remember('home_banners', 3600, function () {
@@ -176,4 +178,33 @@ class HomeController extends Controller
             'data' => $banners
         ]);
     }
+
+    public function client()
+    {
+        $clients = Cache::remember('home_clients', 3600, function () {
+            return Client::select('id', 'title', 'image', 'sort_order', 'status')
+                ->where('status', 1)
+                ->orderBy('sort_order', 'asc')
+                ->orderBy('id', 'desc')
+                ->limit(15)
+                ->get()
+                ->map(function ($client) {
+                    return [
+                        'id' => $client->id,
+                        'title' => $client->title,
+                        'image' => $client->image 
+                            ? asset('storage/images/clients/'.$client->image)
+                            : null,
+                    ];
+                });
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Clients retrieved successfully',
+            'data' => $clients,
+            'total' => $clients->count()
+        ]);
+    }
+
 }

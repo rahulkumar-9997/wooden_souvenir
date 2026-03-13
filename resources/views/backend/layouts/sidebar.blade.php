@@ -39,62 +39,81 @@
             </div>
          </li> -->
          <li class="nav-item">
-            <a class="nav-link" href="{{route('dashboard')}}">
+            <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
                <span class="nav-icon">
-                  <iconify-icon icon="solar:widget-5-bold-duotone"></iconify-icon>
+                     <iconify-icon icon="solar:widget-5-bold-duotone"></iconify-icon>
                </span>
                <span class="nav-text"> Dashboard </span>
             </a>
          </li>
          @php
             $currentRoute = Route::currentRouteName();
-            $shouldBeOpen = in_array($currentRoute, ['label', 'category', 'product.index', 'attributes', 'manage-storage']);
+            $productManagementRoutes = ['label', 'category', 'product.index', 'attributes', 'manage-storage'];
+            $shouldBeOpen = in_array($currentRoute, $productManagementRoutes);
+            $isProductParentActive = $shouldBeOpen;
          @endphp
          <li class="nav-item">
-            <a class="nav-link menu-arrow {{ !$shouldBeOpen ? 'collapsed' : '' }}" 
-               href="#sidebarProducts_2" data-bs-toggle="collapse" role="button"
+            <a class="nav-link menu-arrow {{ !$shouldBeOpen ? 'collapsed' : '' }} {{ $isProductParentActive ? 'active' : '' }}" 
+               href="#sidebarProducts_2" 
+               data-bs-toggle="collapse" 
+               role="button"
                aria-expanded="{{ $shouldBeOpen ? 'true' : 'false' }}" 
                aria-controls="sidebarProducts_2">
                <span class="nav-icon">
                      <iconify-icon icon="solar:t-shirt-bold-duotone"></iconify-icon>
                </span>
                <span class="nav-text"> Manage Products </span>
-            </a>
+            </a>            
             <div class="collapse {{ $shouldBeOpen ? 'show' : '' }}" id="sidebarProducts_2">
                <ul class="nav sub-navbar-nav">                 
-                  <li class="sub-nav-item">
-                     <a class="sub-nav-link" href="{{route('label')}}">Label</a>
-                  </li>
-                  <li class="sub-nav-item">
-                     <a class="sub-nav-link" href="{{route('category')}}">Main Category</a>
-                  </li>
-                  <!-- <li class="sub-nav-item">
-                     <a class="sub-nav-link" href="{{route('subcategory')}}">Sub Category</a>
-                  </li> -->
-                  <li class="sub-nav-item">
-                     <a class="sub-nav-link" href="{{route('product.index')}}">Product</a>
-                  </li>
-                  <li class="sub-nav-item">
-                     <a class="sub-nav-link" href="{{route('attributes')}}">Attributes</a>
-                  </li>
-                  <li class="sub-nav-item">
-                     <a class="sub-nav-link" href="{{route('manage-storage')}}">Storage</a>
-                  </li>
+                     <li class="sub-nav-item {{ request()->routeIs('label') ? 'active' : '' }}">
+                        <a class="sub-nav-link" href="{{ route('label') }}">Label</a>
+                     </li>
+                     
+                     <li class="sub-nav-item {{ request()->routeIs('category') ? 'active' : '' }}">
+                        <a class="sub-nav-link" href="{{ route('category') }}">Main Category</a>
+                     </li>                     
+                     <!-- <li class="sub-nav-item {{ request()->routeIs('subcategory') ? 'active' : '' }}">
+                        <a class="sub-nav-link" href="{{ route('subcategory') }}">Sub Category</a>
+                     </li> -->                     
+                     <li class="sub-nav-item {{ request()->routeIs('product.index') ? 'active' : '' }}">
+                        <a class="sub-nav-link" href="{{ route('product.index') }}">Product</a>
+                     </li>                     
+                     <li class="sub-nav-item {{ request()->routeIs('attributes') ? 'active' : '' }}">
+                        <a class="sub-nav-link" href="{{ route('attributes') }}">Attributes</a>
+                     </li>                     
+                     <li class="sub-nav-item {{ request()->routeIs('manage-storage') ? 'active' : '' }}">
+                        <a class="sub-nav-link" href="{{ route('manage-storage') }}">Storage</a>
+                     </li>
                </ul>
             </div>
          </li>
+         @php
+            $homeSectionRoutes = ['manage-banner.index', 'manage-banner.create', 'manage-banner.edit', 'manage-client.index', 'manage-client.create', 'manage-client.edit'];
+            $shouldHomeSectionBeOpen = in_array($currentRoute, $homeSectionRoutes);
+            $isHomeParentActive = $shouldHomeSectionBeOpen;
+         @endphp
          <li class="nav-item">
-            <a class="nav-link menu-arrow" href="#sidebar_banner" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebar_banner">
+            <a class="nav-link menu-arrow {{ !$shouldHomeSectionBeOpen ? 'collapsed' : '' }} {{ $isHomeParentActive ? 'active' : '' }}" 
+               href="#sidebar_banner" 
+               data-bs-toggle="collapse" 
+               role="button" 
+               aria-expanded="{{ $shouldHomeSectionBeOpen ? 'true' : 'false' }}" 
+               aria-controls="sidebar_banner">
                <span class="nav-icon">
-                  <iconify-icon icon="solar:checklist-bold-duotone"></iconify-icon>
+                     <iconify-icon icon="solar:checklist-bold-duotone"></iconify-icon>
                </span>
-               <span class="nav-text">Manage Home Section </span>
-            </a>
-            <div class="collapse" id="sidebar_banner">
+               <span class="nav-text">Manage Home Section</span>
+            </a>            
+            <div class="collapse {{ $shouldHomeSectionBeOpen ? 'show' : '' }}" id="sidebar_banner">
                <ul class="nav sub-navbar-nav">
-                  <li class="sub-nav-item">
-                     <a class="sub-nav-link" href="{{ route('manage-banner.index') }}">Banner</a>
-                  </li>                     
+                     <li class="sub-nav-item {{ request()->routeIs('manage-banner.index') ? 'active' : '' }}">
+                        <a class="sub-nav-link" href="{{ route('manage-banner.index') }}">Banner</a>
+                     </li>                  
+                     
+                     <li class="sub-nav-item {{ request()->routeIs('manage-client.index') ? 'active' : '' }}">
+                        <a class="sub-nav-link" href="{{ route('manage-client.index') }}">Our Clients</a>
+                     </li>                     
                </ul>
             </div>
          </li>

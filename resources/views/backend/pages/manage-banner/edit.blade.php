@@ -22,38 +22,48 @@
                         @method('PUT')
                         <div class="row">
                             <div class="col-md-6">
-                                <label>Banner Title</label>
-                                <input type="text" name="title" class="form-control"
+                                <div class="mb-3">
+                                    <label class="form-label">Banner Title</label>
+                                    <input type="text" name="title" class="form-control"
                                     value="{{ old('title',$banner->title) }}">
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <label>Banner Content</label>
-                                <textarea name="content"
+                                <div class="mb-3">
+                                    <label class="form-label">Banner Content</label>
+                                    <textarea name="content"
                                     class="form-control">{{ old('content',$banner->content) }}</textarea>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <label>Desktop Banner</label>
-                                <input type="file" name="desktop_image" class="form-control">
-                                @if($banner->image_path_desktop)
-                                <img src="{{ asset('storage/images/banner-desktop/' . $banner->image_path_desktop) }}" width="120">
-                                @endif
+                                <div class="mb-3">
+                                    <label class="form-label">Desktop Banner</label>
+                                    <input type="file" name="desktop_image" class="form-control">
+                                    @if($banner->image_path_desktop)
+                                    <img src="{{ asset('storage/images/banner-desktop/' . $banner->image_path_desktop) }}" width="120">
+                                    @endif
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <label>Mobile Banner</label>
-                                <input type="file" name="mobile_image" class="form-control">
-                                @if($banner->image_path_mobile)
-                                <img src="{{ asset('storage/images/banner-mobile/' . $banner->image_path_mobile) }}" width="120">
-                                @endif
+                                <div class="mb-3">
+                                    <label class="form-label">Mobile Banner</label>
+                                    <input type="file" name="mobile_image" class="form-control">
+                                    @if($banner->image_path_mobile)
+                                    <img src="{{ asset('storage/images/banner-mobile/' . $banner->image_path_mobile) }}" width="120" class="img-thumbnail">
+                                    @endif
+                                </div>
                             </div>
                             <div class="col-md-12">
-                                <label>Select Products</label>
-                                <select name="products[]" class="form-control product-autocomplete" multiple>
-                                    @foreach($banner->products as $product)
-                                    <option value="{{ $product->id }}" selected>
-                                        {{ $product->title }}
-                                    </option>
-                                    @endforeach
-                                </select>
+                                <div class="mb-3">
+                                    <label class="form-label">Select Products</label>
+                                    <select name="products[]" class="form-control product-autocomplete" multiple>
+                                        @foreach($banner->products as $product)
+                                        <option value="{{ $product->id }}" selected>
+                                            {{ $product->title }}
+                                        </option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
                             <div class="col-md-12 mt-3">
                                 <button class="btn btn-primary">Update Banner</button>
