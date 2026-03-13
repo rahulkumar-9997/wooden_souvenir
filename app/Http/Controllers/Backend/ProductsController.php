@@ -1716,18 +1716,35 @@ class ProductsController extends Controller
 
     public function productAutocomplete(Request $request)
     {
-        $products = Product::where('title', 'LIKE', '%'.$request->search.'%')
-            ->select('id','title')
-            ->limit(10)
+        $query = $request->input('search');
+        $selectedProductIds = $request->input('selected_ids', []); 
+        if (!$query) {
+            return response()->json([]);
+        }
+        $searchTerms = explode(' ', $query);
+        $booleanQuery = '+' . implode(' +', $searchTerms);
+
+        $products = Product::where(function ($q) use ($searchTerms, $booleanQuery) {
+                $q->whereRaw("MATCH(title) AGAINST(? IN BOOLEAN MODE)", [$booleanQuery])
+                ->orWhere(function ($subQ) use ($searchTerms) {
+                    foreach ($searchTerms as $term) {
+                        $subQ->where('title', 'like', '%' . $term . '%');
+                    }
+                });
+            })
+            ->whereNotIn('id', $selectedProductIds)
+            ->select('id', 'title')
+            ->limit(15)
+            ->orderBy('title')
             ->get();
-        $data = [];
-        foreach ($products as $product) {
-            $data[] = [
+        $results = $products->map(function ($product) {
+            return [
                 'id' => $product->id,
                 'text' => $product->title
             ];
-        }
-        return response()->json($data);
+        });
+
+        return response()->json(['results' => $results]);
     }
     
 }    

@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Attribute_values;
 use App\Models\Attribute;
+use App\Models\Banner;
 use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
@@ -143,6 +144,36 @@ class HomeController extends Controller
             'status' => true,
             'message' => 'Trending products',
             'data' => $products
+        ]);
+    }
+    public function banner()
+    {
+        $banners = Cache::remember('home_banners', 3600, function () {
+            return Banner::with(['products:id,title,slug'])
+            ->where('status', 1)
+            ->orderBy('id', 'desc')
+            ->get();
+        });
+        $banners = $banners->map(function ($banner) {
+            return [
+                'id' => $banner->id,
+                'title' => $banner->title,
+                'content' => $banner->content,
+                'image_path_desktop' => $banner->image_path_desktop 
+                ? asset('storage/images/banner-desktop/'.$banner->image_path_desktop)
+                : null,
+                'image_path_mobile' => $banner->image_path_mobile 
+                ? asset('storage/images/banner-mobile/'.$banner->image_path_mobile)
+                : null,
+                'banner_link' => $banner->products->isNotEmpty(),
+                'products' => $banner->products
+            ];
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Banner list fetched successfully',
+            'data' => $banners
         ]);
     }
 }

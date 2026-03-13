@@ -1,177 +1,202 @@
 <?php
+
 namespace App\Http\Controllers\Backend;
+
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\Banner;
 use Illuminate\Support\Facades\Validator;
-use Intervention\Image\Facades\Image;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
+use App\Helpers\ImageHelper;
+use App\Models\Banner;
 
 class BannerController extends Controller
 {
-    public function index(){
-        $banner = Banner::orderBy('id', 'desc')->get();
-        return view('backend.pages.manage-banner.index', compact('banner'));
+    public function index()
+    {
+        $banners = Banner::with('products')
+            ->orderBy('id', 'desc')
+            ->get();
+        return view('backend.pages.manage-banner.index', compact('banners'));
     }
 
-    public function create(){
-        return view('backend.pages.manage-banner.create');        
+    public function create()
+    {
+        return view('backend.pages.manage-banner.create');
     }
 
-    public function store(Request $request){
+    public function store(Request $request)
+    {
         $validator = Validator::make($request->all(), [
-            'banner_title' => 'required|string|max:255',
-            'banner_image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:6144',
-            'banner_path' => 'required|url|max:255',
+            'title' => 'required|string|max:255',
+            'content' => 'nullable|string',
+            'desktop_image' => 'required|image|mimes:jpeg,png,jpg,webp|max:6144',
+            'mobile_image' => 'required|image|mimes:jpeg,png,jpg,webp|max:6144',
+            'products' => 'nullable|array'
         ]);
-
         if ($validator->fails()) {
-            return response()->json([
-                'status' => 'error',
-                'errors' => $validator->errors(),
-            ], 422);
+            return redirect()->back()->withErrors($validator)->withInput();
         }
-        $image = $request->file('banner_image');
-        $bannerTitle = Str::slug($request->input('banner_title'), '-'); 
-        $timestamp = round(microtime(true) * 1000);
-        $uniqueName = $bannerTitle . '-' . $timestamp . '.webp';
-        $imagePath = public_path('images/banners');
-
-        if (!file_exists($imagePath)) {
-            mkdir($imagePath, 0755, true);
+        DB::beginTransaction();
+        try {
+            $input = [
+                'title' => $request->title,
+                'content' => $request->content,
+                'status' => true
+            ];
+            if ($request->hasFile('desktop_image')) {
+                $timestamp = round(microtime(true) * 1000);
+                $sanitized_title = preg_replace('/[^A-Za-z0-9\-]/', '', str_replace(' ', '-', $request->title)) . '-' . $timestamp;
+                $baseName = ImageHelper::generateFileName($sanitized_title);
+                $input['image_path_desktop'] = ImageHelper::uploadSingleImageWebpOnly(
+                    $request->file('desktop_image'),
+                    $baseName,
+                    'banner-desktop'
+                );
+                Log::info('Banner desktop image uploaded: ' . $input['image_path_desktop']);
+            }
+            if ($request->hasFile('mobile_image')) {
+                $timestamp = round(microtime(true) * 1000);
+                $sanitized_title = preg_replace('/[^A-Za-z0-9\-]/', '', str_replace(' ', '-', $request->title)) . '-' . $timestamp;
+                $baseName = ImageHelper::generateFileName($sanitized_title);
+                $input['image_path_mobile'] = ImageHelper::uploadSingleImageWebpOnly(
+                    $request->file('mobile_image'),
+                    $baseName,
+                    'banner-mobile'
+                );
+                Log::info('Banner mobile image uploaded: ' . $input['image_path_mobile']);
+            }
+            $banner = Banner::create($input);
+            if ($request->products) {
+                $banner->products()->sync($request->products);
+            }
+            Cache::forget('home_banners');
+            DB::commit();
+            return redirect('manage-banner')->with('success', 'Banner created successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Banner store failed', [
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->back()->with('error', 'Something went wrong')->withInput();
         }
-        $compressedImage = Image::make($image->getRealPath());
-        $compressedImage->resize(1200, 600, function ($constraint) {
-            $constraint->aspectRatio();
-            $constraint->upsize();
-        });
-        $compressedImage->encode('webp', 80); 
-        $compressedImage->save($imagePath . '/' . $uniqueName);
-        $banner = Banner::create([
-            'title' => $request->input('banner_title'),
-            'image_path_desktop' => 'images/banners/' . $uniqueName,
-            'link_desktop' => $request->input('banner_path'),
-            'status' => true,
-        ]);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Banner created successfully!',
-            'data' => $banner,
-        ]);
     }
 
-    public function edit(Request $request, $id){
-        $blogCategoryId = $request->input('blogCategoryId'); 
-        $banner_row = Banner::findOrFail($id);
-        $form ='
-        <div class="modal-body">
-            <form method="POST" action="'.route('manage-banner.update', ['manage_banner' => $banner_row->id]).'" accept-charset="UTF-8" enctype="multipart/form-data" id="editBanner">
-                '.csrf_field().'
-                <input type="hidden" name="_method" value="PUT">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="banner_title" class="form-label">Banner Title *</label>
-                            <input type="text" id="banner_title" name="banner_title" class="form-control" value="'.$banner_row->title.'">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="banner_image" class="form-label">Banner Image *</label>
-                            <input type="file" id="banner_image" name="banner_image" class="form-control">
-                            <img src="'.asset($banner_row->image_path_desktop).'" class="img-thumbnail" style="width: 70px; height: 70px;" alt="'.$banner_row->title.'">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="banner_path" class="form-label">Banner Path</label>
-                            <input type="text" id="banner_path" name="banner_path" class="form-control" value="'.$banner_row->link_desktop.'">
-                        </div>
-                    </div>
-                    
-                    <!--<div class="mb-3 col-md-12">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" role="switch" id="status" name="status">
-                            <label class="form-check-label" for="status">Status</label>
-                        </div>
-                    </div>-->
-                    
-                    <div class="modal-footer pb-0">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Save changes</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-        ';
-        return response()->json([
-            'message' => 'Banner Form created successfully',
-            'form' => $form,
-        ]);
+    public function edit(Request $request, $id)
+    {
+        $banner = Banner::with('products')->findOrFail($id);
+        $selectedProducts = $banner->products->pluck('id')->toArray();
+        return view('backend.pages.manage-banner.edit', compact('banner', 'selectedProducts'));
     }
 
-    public function update(Request $request, $id){
+    public function update(Request $request, $id)
+    {
         $validator = Validator::make($request->all(), [
-            'banner_title' => 'required|string|max:255',
-            'banner_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:6144',
-            'banner_path' => 'required|url|max:255',
+            'title' => 'required|string|max:255',
+            'content' => 'nullable|string',
+            'image_path_desktop' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:6144',
+            'image_path_mobile' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:6144',
+            'products' => 'nullable|array'
         ]);
-
         if ($validator->fails()) {
-            return response()->json([
-                'status' => 'error',
-                'errors' => $validator->errors(),
-            ], 422);
+            return redirect()->back()->withErrors($validator)->withInput();
         }
-
-        $banner = Banner::findOrFail($id);
-        $bannerTitle = Str::slug($request->input('banner_title'), '-');
-        $timestamp = round(microtime(true) * 1000);
-
-        if ($request->hasFile('banner_image')) {
-            if ($banner->image_path_desktop && file_exists(public_path($banner->image_path_desktop))) {
-                unlink(public_path($banner->image_path_desktop));
+        DB::beginTransaction();
+        try {
+            $banner = Banner::findOrFail($id);
+            $input = [
+                'title' => $request->title,
+                'content' => $request->content
+            ];
+            if ($request->hasFile('desktop_image')) {
+                /*delete image in folder */
+                // $imagePath = public_path('images/banner-desktop/' . $banner->image_path_desktop);
+                // if (File::exists($imagePath)) {
+                //     File::delete($imagePath);
+                // }
+                $deleteImageFile = ImageHelper::deleteSingleImage(
+                    $banner->image_path_desktop,
+                    'banner-desktop'
+                );
+                /*delete image in folder */
+                $timestamp = round(microtime(true) * 1000);
+                $sanitized_title = preg_replace('/[^A-Za-z0-9\-]/', '', str_replace(' ', '-', $request->title)) . '-' . $timestamp;
+                $baseName = ImageHelper::generateFileName($sanitized_title);
+                $input['image_path_desktop'] = ImageHelper::uploadSingleImageWebpOnly(
+                    $request->file('desktop_image'),
+                    $baseName,
+                    'banner-desktop'
+                );
+                Log::info('Banner desktop image updated: ' . $input['image_path_desktop']);
             }
-
-            $image = $request->file('banner_image');
-            $uniqueName = $bannerTitle . '-' . $timestamp . '.webp';
-            $imagePath = public_path('images/banners');
-
-            if (!file_exists($imagePath)) {
-                mkdir($imagePath, 0755, true);
+            if ($request->hasFile('mobile_image')) {
+                /*delete image in folder */
+                // $imagePathMobile = public_path('images/banner-mobile/' . $banner->image_path_mobile);
+                // if (File::exists($imagePathMobile)) {
+                //     File::delete($imagePathMobile);
+                // }
+                $deleteImageFileMobile = ImageHelper::deleteSingleImage(
+                    $banner->image_path_mobile,
+                    'banner-mobile'
+                );
+                $timestamp = round(microtime(true) * 1000);
+                $sanitized_title = preg_replace('/[^A-Za-z0-9\-]/', '', str_replace(' ', '-', $request->title)) . '-' . $timestamp;
+                $baseName = ImageHelper::generateFileName($sanitized_title);
+                $input['image_path_mobile'] = ImageHelper::uploadSingleImageWebpOnly(
+                    $request->file('mobile_image'),
+                    $baseName,
+                    'banner-mobile'
+                );
+                Log::info('Banner mobile image updated: ' . $input['image_path_mobile']);
             }
-
-            $compressedImage = Image::make($image->getRealPath());
-            $compressedImage->resize(1200, 600, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
-            $compressedImage->encode('webp', 80);
-            $compressedImage->save($imagePath . '/' . $uniqueName);
-
-            $banner->image_path_desktop = 'images/banners/'.$uniqueName;
+            $banner->update($input);
+            if ($request->products) {
+                $banner->products()->sync($request->products);
+            } else {
+                $banner->products()->detach();
+            }
+            Cache::forget('home_banners');
+            DB::commit();
+            return redirect('manage-banner')->with('success', 'Banner updated successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Banner update failed', [
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->back()->with('error', 'Something went wrong');
         }
-        $banner->update([
-            'title' => $request->input('banner_title'),
-            'link_desktop' => $request->input('banner_path'),
-            'status' => true,
-        ]);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Banner updated successfully!',
-            'data' => $banner,
-        ]);
     }
 
-    public function destroy($id){
-        $banner = Banner::findOrFail($id);
-        if ($banner->image_path_desktop && file_exists(public_path($banner->image_path_desktop))) {
-            unlink(public_path($banner->image_path_desktop)); 
+    public function destroy($id)
+    {
+        DB::beginTransaction();
+        try {
+            $banner = Banner::findOrFail($id);
+            /* Delete Desktop Image */
+            ImageHelper::deleteSingleImage(
+                $banner->image_path_desktop,
+                'banner-desktop'
+            );
+            /* Delete Mobile Image */
+            ImageHelper::deleteSingleImage(
+                $banner->image_path_mobile,
+                'banner-mobile'
+            );
+            $banner->products()->detach();
+            $banner->delete();
+            Cache::forget('home_banners');
+            DB::commit();
+            return redirect()->back()->with('success', 'Banner and its images deleted successfully!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Banner delete failed', [
+                'banner_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->back()->with('error', 'Something went wrong while deleting banner');
         }
-        $banner->delete();
-        return redirect()->back()->with('success', 'Banner and its image deleted successfully!');           
     }
-
 }

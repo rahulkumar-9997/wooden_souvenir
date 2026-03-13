@@ -26,50 +26,77 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="title" class="form-label">Banner Title *</label>
-                                    <input type="text" id="title" name="title" class="form-control" required>
+                                    <input type="text" 
+                                        id="title" 
+                                        name="title" 
+                                        value="{{ old('title') }}"
+                                        class="form-control @error('title') is-invalid @enderror">
+                                    @error('title')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="content" class="form-label">Banner Content</label>
-                                    <textarea id="content" name="content" class="form-control"></textarea>
+                                    <textarea id="content"
+                                            name="content"
+                                            class="form-control @error('content') is-invalid @enderror">{{ old('content') }}</textarea>
+                                    @error('content')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="image_path_desktop" class="form-label">Desktop Banner Image</label>
-                                    <input type="file" id="image_path_desktop" name="image_path_desktop" class="form-control">
+                                    <label for="desktop_image" class="form-label">Desktop Banner Image</label>
+                                    <input type="file"
+                                        id="desktop_image"
+                                        name="desktop_image"
+                                        class="form-control @error('desktop_image') is-invalid @enderror">
+                                    @error('desktop_image')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="image_path_mobile" class="form-label">Mobile Banner Image</label>
-                                    <input type="file" id="image_path_mobile" name="image_path_mobile" class="form-control">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="link_desktop" class="form-label">Desktop Link</label>
-                                    <input type="text" id="link_desktop" name="link_desktop" class="form-control">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="link_mobile" class="form-label">Mobile Link</label>
-                                    <input type="text" id="link_mobile" name="link_mobile" class="form-control">
+                                    <label for="mobile_image" class="form-label">Mobile Banner Image</label>
+                                    <input type="file"
+                                        id="mobile_image"
+                                        name="mobile_image"
+                                        class="form-control @error('mobile_image') is-invalid @enderror">
+                                    @error('mobile_image')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                             </div>
                             <div class="col-md-12">
                                 <div class="mb-3">
                                     <label for="products" class="form-label">Select Products</label>
-                                    <select name="products[]" id="products" class="form-control product-autocomplete" multiple></select>
+                                    <select name="products[]" 
+                                            id="products" 
+                                            class="form-control product-autocomplete @error('products') is-invalid @enderror" 
+                                            multiple>
+                                    </select>
+                                    @error('products')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                             </div>
                             <div class="modal-footer pb-0">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                 <button type="submit" class="btn btn-primary">Save Banner</button>
                             </div>
-
                         </div>
                     </form>
                 </div>
@@ -87,24 +114,23 @@
 $(document).ready(function(){
     $('.product-autocomplete').select2({
         placeholder: "Search Product",
-        minimumInputLength: 0,
+        minimumInputLength: 1,
         ajax: {
             url: "{{ route('product.autocomplete') }}",
             dataType: 'json',
             delay: 250,
             data: function(params){
                 return {
-                    search: params.term
+                    search: params.term,
+                    selected_ids: $('.product-autocomplete').val() || []
                 };
             },
             processResults: function(data){
-                return {
-                    results: data
-                };
-            }
+                return data;
+            },
+            cache: true
         }
     });
-
 });
 </script>
 

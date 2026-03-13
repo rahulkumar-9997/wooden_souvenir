@@ -26,14 +26,17 @@
                
             </div>
             <div class="card-body">
-               @if (isset($banner) && $banner->count() > 0)
+               @if (isset($banners) && $banners->count() > 0)
                   <div class="table-responsive1">
                      <table id="example-1" class="table align-middle mb-0 table-hover table-centered">
                         <thead class="bg-light-subtle">
                               <tr>
                                  <th>Sr. No.</th>
                                  <th>Name</th>
-                                 <th>Banner Image</th>
+                                 <th>Content</th>
+                                 <th>Product</th>
+                                 <th>Banner IMG Desktop</th>
+                                 <th>Banner IMG Mobile</th>
                                  <th>Action</th>
                               </tr>
                         </thead>
@@ -41,18 +44,31 @@
                               @php
                                  $sr_no = 1;
                               @endphp
-                              @foreach($banner as $banner_row)
+                              @foreach($banners as $banner_row)
                                  <tr>
                                     <td>{{ $sr_no }}</td>
                                     <td>{{ $banner_row->title }}</td>
+                                    <td>{{ \Illuminate\Support\Str::limit(strip_tags($banner_row->content), 100) }}</td>
                                     <td>
-                                        <img src="{{ asset($banner_row->image_path_desktop) }}" class="img-thumbnail" style="width: 70px; height: 70px;" alt="{{ $banner_row->title }}">
+                                    @foreach($banner_row->products as $product)
+                                       <span class="badge bg-info">
+                                          {{ $product->title }}
+                                       </span>
+                                    @endforeach
+                                 </td>
+                                    <td>
+                                        <img src="
+                                        {{ asset('storage/images/banner-desktop/' . $banner_row->image_path_desktop) }}"
+                                       class="img-thumbnail" style="width: 70px; height: 70px;" alt="{{ $banner_row->title }}">
+                                    </td>
+                                    <td>
+                                        <img src="
+                                        {{ asset('storage/images/banner-mobile/' . $banner_row->image_path_mobile) }}"
+                                       class="img-thumbnail" style="width: 70px; height: 70px;" alt="{{ $banner_row->title }}">
                                     </td>
                                     <td>
                                           <div class="d-flex gap-2">
-                                             <a href="javascript:void(0);" class="btn btn-soft-primary btn-sm" data-bannerid="{{ $banner_row->id }}" data-size="lg" data-title="Edit Blog Category" 
-                                             data-edit-banner-popup="true" 
-                                             data-bs-toggle="tooltip" data-url="{{ route('manage-banner.edit', $banner_row->id) }}">
+                                             <a href="{{ route('manage-banner.edit', $banner_row->id) }}" class="btn btn-soft-primary btn-sm" data-title="Edit Blog Category" data-bs-toggle="tooltip">
                                                 <i class="ti ti-pencil"></i>
                                              </a>
                                              <form method="POST" action="{{ route('manage-banner.destroy', $banner_row->id) }}">

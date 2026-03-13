@@ -22515,4 +22515,11 @@ text-dark {
 .quill-editor-wrapper.fullscreen-mode .ql-container {
   height: calc(100vh - 45px) !important;
 }
+.select2-container--default .select2-search--inline .select2-search__field{
+  padding: 0.5rem 1rem!important;
+  margin-top: 0px!important;
+}
+.select2-container .select2-selection--multiple .select2-selection__rendered{
+  display: block!important;
+}
 /*rahul css*/
