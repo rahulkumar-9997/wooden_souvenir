@@ -55,7 +55,6 @@ class MenuController extends Controller
                         })
                         ->filter()
                         ->values();
-
                     return $attributesWithValues->isNotEmpty() ? [
                         'title' => $category->title,
                         'category_slug' => $category->slug,
