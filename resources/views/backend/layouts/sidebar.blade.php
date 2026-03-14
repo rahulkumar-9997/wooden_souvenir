@@ -89,7 +89,7 @@
             </div>
          </li>
          @php
-            $homeSectionRoutes = ['manage-banner.index', 'manage-banner.create', 'manage-banner.edit', 'manage-client.index', 'manage-client.create', 'manage-client.edit'];
+            $homeSectionRoutes = ['manage-banner.index', 'manage-banner.create', 'manage-banner.edit', 'manage-client.index', 'manage-client.create', 'manage-client.edit', 'manage-testimonials.index', 'manage-testimonials.create', 'manage-testimonials.edit'];
             $shouldHomeSectionBeOpen = in_array($currentRoute, $homeSectionRoutes);
             $isHomeParentActive = $shouldHomeSectionBeOpen;
          @endphp
@@ -113,6 +113,9 @@
                      
                      <li class="sub-nav-item {{ request()->routeIs('manage-client.index') ? 'active' : '' }}">
                         <a class="sub-nav-link" href="{{ route('manage-client.index') }}">Our Clients</a>
+                     </li>  
+                     <li class="sub-nav-item {{ request()->routeIs('manage-testimonials.index') ? 'active' : '' }}">
+                        <a class="sub-nav-link" href="{{ route('manage-testimonials.index') }}">Testimonials</a>
                      </li>                     
                </ul>
             </div>

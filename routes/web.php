@@ -18,6 +18,7 @@ use App\Http\Controllers\Backend\ProductsController;
 use App\Http\Controllers\Backend\DatabaseController;
 use App\Http\Controllers\Backend\BannerController;
 use App\Http\Controllers\Backend\OurClientController;
+use App\Http\Controllers\Backend\TestimonialsController;
 use App\Http\Controllers\Backend\StorageController;
 use App\Http\Controllers\Backend\RelatedProductController;
 use App\Http\Controllers\Backend\MagicAiImageGeneratorController;
@@ -152,7 +153,7 @@ Route::group(['middleware' => ['auth']], function() {
     Route::resource('manage-banner', BannerController::class);
     Route::get('/product-autocomplete', [ProductsController::class,'productAutocomplete'])->name('product.autocomplete');
     Route::resource('manage-client', OurClientController::class);
-
+    Route::resource('manage-testimonials', TestimonialsController::class);
 
     Route::Resource('magic-ai-image-generator', MagicAiImageGeneratorController::class);
 });

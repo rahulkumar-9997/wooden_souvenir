@@ -59,7 +59,9 @@ class MenuController extends Controller
                     return $attributesWithValues->isNotEmpty() ? [
                         'title' => $category->title,
                         'category_slug' => $category->slug,
-                        'category_image' => $category->image,
+                        'category_image' => $category->image ?
+                                            asset('storage/images/category/thumb/'.$category->image)
+                                            : null,
                         'attributes' => $attributesWithValues
                     ] : null;
                 })

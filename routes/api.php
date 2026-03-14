@@ -14,3 +14,5 @@ Route::get('/home/new-arrivals', [HomeController::class, 'newArrivals']);
 Route::get('/home/trending-products', [HomeController::class, 'trendingProducts']);
 Route::get('/home/banner', [HomeController::class, 'banner']);
 Route::get('/home/client', [HomeController::class, 'client']);
+Route::get('/home/testimonials', [HomeController::class, 'testimonials']);
+Route::get('product-catalog/{category}/{attribute}/{value}', [HomeController::class, 'productCatalog']);
