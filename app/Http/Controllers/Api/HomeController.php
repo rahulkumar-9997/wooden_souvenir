@@ -363,11 +363,9 @@ class HomeController extends Controller
                 return [
                     'id' => $product->id,
                     'title' => $product->title,
-                    'slug' => $product->slug,
-                    'price' => [
-                        'mrp' => $product->mrp,
-                        'offer_price' => $product->offer_rate
-                    ],
+                    'slug' => $product->slug,                    
+                    'mrp' => $product->mrp,
+                    'offer_price' => $product->offer_rate,
                     'sku' => $product->sku,
                     'stock_quantity' => $product->stock_quantity,
                     'image' => isset($product->images[0])
