@@ -43,6 +43,7 @@ class HomeController extends Controller
                 ->with([
                     'category:id,title,slug',
                     'firstSortedImage:id,product_id,image_path',
+                    'images:id,product_id,image_path,sort_order',
                     'inventories' => function ($query) {
                         $query->select('id','product_id','mrp','offer_rate','purchase_rate','sku')
                             ->orderBy('mrp','asc');
@@ -61,9 +62,6 @@ class HomeController extends Controller
                         'id' => $product->id,
                         'title' => $product->title,
                         'slug' => $product->slug,
-                        'image' => $product->firstSortedImage
-                            ? $product->firstSortedImage->getThumbImages()
-                            : null,
                         'mrp' => $inventory->mrp ?? null,
                         'offer_rate' => $inventory->offer_rate ?? null,
                         'sku' => $inventory->sku ?? null,
@@ -72,6 +70,10 @@ class HomeController extends Controller
                             'title' => $product->category->title ?? null,
                             'slug'  => $product->category->slug ?? null,
                         ],
+                        'image' => $product->firstSortedImage ? $product->firstSortedImage->getThumbImages() : null,
+                        'images' => $product->images->map(function ($img) {
+                            return asset('storage/images/product/thumb/'.$img->image_path);
+                        })->values(),
                     ];
                 })
                 ->shuffle()
@@ -110,6 +112,7 @@ class HomeController extends Controller
                 ->with([
                     'category:id,title,slug',
                     'firstSortedImage:id,product_id,image_path',
+                    'images:id,product_id,image_path,sort_order',
                     'inventories' => function ($query) {
                         $query->select('id','product_id','mrp','offer_rate','purchase_rate','sku')
                             ->orderBy('mrp','asc');
@@ -126,10 +129,7 @@ class HomeController extends Controller
                     return [
                         'id' => $product->id,
                         'title' => $product->title,
-                        'slug' => $product->slug,
-                        'image' => $product->firstSortedImage
-                            ? $product->firstSortedImage->getThumbImages()
-                            : null,
+                        'slug' => $product->slug,                        
                         'mrp' => $inventory->mrp ?? null,
                         'offer_rate' => $inventory->offer_rate ?? null,
                         'sku' => $inventory->sku ?? null,
@@ -138,6 +138,10 @@ class HomeController extends Controller
                             'title' => $product->category->title ?? null,
                             'slug'  => $product->category->slug ?? null,
                         ],
+                        'image' => $product->firstSortedImage ? $product->firstSortedImage->getThumbImages() : null,
+                        'images' => $product->images->map(function ($img) {
+                            return asset('storage/images/product/thumb/'.$img->image_path);
+                        })->values(),
                     ];
                 })
                 ->shuffle()
@@ -170,7 +174,7 @@ class HomeController extends Controller
                 ? asset('storage/images/banner-mobile/'.$banner->image_path_mobile)
                 : null,
                 'banner_link' => $banner->products->isNotEmpty(),
-                'products' => $banner->products
+                //'products' => $banner->products
             ];
         });
 
@@ -212,23 +216,23 @@ class HomeController extends Controller
     public function testimonials()
     {
         $testimonials = Cache::remember('home_testimonials', now()->addHours(24), function () {
-            return Testimonial::select('id','name','content','designation','profile_img','status')
-                ->where('status',1)
-                ->orderBy('id','desc')
-                ->limit(10)
-                ->get()
-                ->map(function ($testimonial) {
-                    return [
-                        'id' => $testimonial->id,
-                        'name' => $testimonial->name ?? null,
-                        'designation' => $testimonial->designation ?? null,
-                        'content' => $testimonial->content ?? null,
-                        'image' => $testimonial->profile_img
-                            ? asset('storage/images/testimonials/'.$testimonial->profile_img)
-                            : null,
-                    ];
+            return Testimonial::select('id','name','content','designation','profile_img')
+            ->where('status',1)
+            ->orderBy('id','desc')
+            ->limit(10)
+            ->get()
+            ->map(function ($testimonial) {
+                return [
+                    'id' => $testimonial->id,
+                    'name' => $testimonial->name ?? null,
+                    'designation' => $testimonial->designation ?: null,
+                    'content' => $testimonial->content ?? null,
+                    'image' => !empty($testimonial->profile_img)
+                        ? asset('storage/images/testimonials/'.$testimonial->profile_img)
+                        : null,
+                ];
 
-                });
+            });
         });
         return response()->json([
             'success' => true,

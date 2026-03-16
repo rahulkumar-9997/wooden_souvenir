@@ -63,7 +63,7 @@ class TestimonialsController extends Controller
                 'name' => $request->name,
                 'slug' => $slug,
                 'content' => $request->content,
-                'designation' => $request->designation ?? '',
+                'designation' => $request->designation ?? null,
                 'profile_img' => $imagePath,
                 'status' => $request->status ? true : false
             ]);
@@ -119,7 +119,7 @@ class TestimonialsController extends Controller
             $testimonial->update([
                 'name' => $request->name,
                 'content' => $request->content,
-                'designation' => $request->designation ?? '',
+                'designation' => $request->designation ?? null,
                 'profile_img' => $imagePath,
                 'status' => $request->status ? true : false
             ]);

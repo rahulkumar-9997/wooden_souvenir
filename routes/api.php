@@ -18,3 +18,4 @@ Route::get('/home/client', [HomeController::class, 'client']);
 Route::get('/home/testimonials', [HomeController::class, 'testimonials']);
 Route::get('product-catalog/{category}/{attribute}/{value}', [HomeController::class, 'productCatalog']);
 Route::get('blog', [BlogController::class, 'blogList']);
+Route::get('blog/{slug}', [BlogController::class, 'blogDetails']);
