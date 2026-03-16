@@ -9,6 +9,7 @@ use App\Http\Controllers\Backend\UsersController;
 use App\Http\Controllers\Backend\RolesController;
 use App\Http\Controllers\Backend\PermissionsController;
 use App\Http\Controllers\Backend\DashboardController;
+use App\Http\Controllers\Backend\CkeditorController;
 use App\Http\Controllers\Backend\BrandController;
 use App\Http\Controllers\Backend\LabelController;
 use App\Http\Controllers\Backend\CategoryController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\Backend\DatabaseController;
 use App\Http\Controllers\Backend\BannerController;
 use App\Http\Controllers\Backend\OurClientController;
 use App\Http\Controllers\Backend\TestimonialsController;
+use App\Http\Controllers\Backend\BlogController;
 use App\Http\Controllers\Backend\StorageController;
 use App\Http\Controllers\Backend\RelatedProductController;
 use App\Http\Controllers\Backend\MagicAiImageGeneratorController;
@@ -154,6 +156,12 @@ Route::group(['middleware' => ['auth']], function() {
     Route::get('/product-autocomplete', [ProductsController::class,'productAutocomplete'])->name('product.autocomplete');
     Route::resource('manage-client', OurClientController::class);
     Route::resource('manage-testimonials', TestimonialsController::class);
+    Route::resource('manage-blog', BlogController::class);
 
     Route::Resource('magic-ai-image-generator', MagicAiImageGeneratorController::class);
+    Route::middleware(['auth'])->group(function () {
+    Route::post('/ckeditor/upload', [CkeditorController::class, 'upload'])->name('ckeditor.upload');
+    Route::get('/ckeditor/images', [CkeditorController::class, 'imageList'])->name('ckeditor.images');
+    Route::delete('/ckeditor/images', [CkeditorController::class, 'deleteImage'])->name('ckeditor.delete');
+});
 });

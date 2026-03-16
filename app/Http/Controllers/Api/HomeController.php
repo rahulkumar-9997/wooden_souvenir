@@ -220,9 +220,9 @@ class HomeController extends Controller
                 ->map(function ($testimonial) {
                     return [
                         'id' => $testimonial->id,
-                        'name' => $testimonial->name,
-                        'designation' => $testimonial->designation,
-                        'content' => $testimonial->content,
+                        'name' => $testimonial->name ?? null,
+                        'designation' => $testimonial->designation ?? null,
+                        'content' => $testimonial->content ?? null,
                         'image' => $testimonial->profile_img
                             ? asset('storage/images/testimonials/'.$testimonial->profile_img)
                             : null,

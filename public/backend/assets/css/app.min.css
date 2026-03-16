@@ -22522,4 +22522,9 @@ text-dark {
 .select2-container .select2-selection--multiple .select2-selection__rendered{
   display: block!important;
 }
+/*ckeditor display*/
+.cke_notifications_area{
+  display: none;
+}
+/*ckeditor display*/
 /*rahul css*/

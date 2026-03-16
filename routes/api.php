@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\HomeController;
+use App\Http\Controllers\Api\BlogController;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -16,3 +17,4 @@ Route::get('/home/banner', [HomeController::class, 'banner']);
 Route::get('/home/client', [HomeController::class, 'client']);
 Route::get('/home/testimonials', [HomeController::class, 'testimonials']);
 Route::get('product-catalog/{category}/{attribute}/{value}', [HomeController::class, 'productCatalog']);
+Route::get('blog', [BlogController::class, 'blogList']);
