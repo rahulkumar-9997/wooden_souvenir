@@ -13,7 +13,7 @@ class ProductsAdditionalFeature extends Model
         'id',
         'product_id',
         'additional_feature_id',
-        'product_additional_feature_value',
+        'product_additional_featur_value',
         'sort_order',
     ];
 

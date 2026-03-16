@@ -14,8 +14,8 @@ class Product extends Model
     protected $table = 'products';
     protected $fillable = [
         'id',
-        'title',
         'visitor_count',
+        'title',        
         'hsn_code',
         'gst_in_per',
         'slug',
@@ -92,14 +92,7 @@ class Product extends Model
     /**inventory relationship */
     public function inventories(){
         return $this->hasMany(Inventory::class, 'product_id', 'id');
-    }
-    
-
-    /* Define the relationship to VendorPurchaseLine*/
-    public function purchaseLines()
-    {
-        return $this->hasMany(VendorPurchaseLine::class, 'product_id');
-    }
+    }    
 
     protected static function boot()
     {
@@ -132,11 +125,7 @@ class Product extends Model
     {
         return $this->belongsTo(Label::class, 'label_id', 'id');
     }
-
-    public function specialOffers()
-    {
-        return $this->hasMany(SpecialOffer::class, 'product_id');
-    }
+    
 
     public function reviews()
     {
