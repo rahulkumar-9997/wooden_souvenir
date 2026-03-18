@@ -527,6 +527,233 @@ class ProductController extends Controller
                     'message' => 'Product details not found'
                 ], 404);
             }
+            $imageThumbs = $product_details->images->map(function ($img) {
+                return [
+                    'id' => $img->id,
+                    'image_thumb' => asset('storage/images/product/thumb/' . $img->image_path),
+                ];
+            });            
+            $imageLarges = $product_details->images->map(function ($img) {
+                return [
+                    'id' => $img->id,
+                    'image_large' => asset('storage/images/product/large/' . $img->image_path),
+                ];
+            });
+            $productData = [
+                'id' => $product_details->id,
+                'title' => $product_details->title,
+                'slug' => $product_details->slug,
+                'category_id' => $product_details->category_id,
+                'product_description' => $product_details->product_description,
+                'product_specification' => $product_details->product_specification,
+                'meta_title' => $product_details->meta_title,
+                'meta_description' => $product_details->meta_description,
+                'video_id' => $product_details->video_id,
+                'mrp' => $product_details->mrp,
+                'offer_rate' => $product_details->offer_rate,
+                'purchase_rate' => $product_details->purchase_rate,
+                'sku' => $product_details->sku,
+                'stock_quantity' => $product_details->stock_quantity,
+                'image_thumbs' => $imageThumbs,
+                'image_larges' => $imageLarges,
+                'category' => $product_details->category,
+                'attributes' => $product_details->attributes,
+                'additional_features' => $product_details->additional_features,                
+                
+            ];
+            
+            $categoryId = $product_details->category->id ?? null;
+            $related_products_query = Product::with([
+                'category:id,title,slug',
+                'firstSortedImage:id,product_id,image_path',
+                'ProductAttributesValues' => function ($query) use ($attributeValue) {
+                    $query->select('id', 'product_id', 'product_attribute_id', 'attributes_value_id')
+                        ->where('attributes_value_id', $attributeValue->id)
+                        ->with([
+                            'attributeValue:id,slug'
+                        ])
+                        ->orderBy('id');
+                }
+            ])
+            ->leftJoin('inventories', function ($join) {
+                $join->on('products.id', '=', 'inventories.product_id')
+                    ->whereRaw('inventories.mrp = (SELECT MIN(mrp) FROM inventories WHERE product_id = products.id)');
+            })
+            ->select(
+                'products.id',
+                'products.title',
+                'products.slug',
+                'products.category_id',
+            );
+            if ($categoryId) {
+                $related_products_query->where('products.category_id', $categoryId);
+            }
+            $related_products = $related_products_query
+                ->where('products.id', '!=', $product->id) 
+                ->whereHas('productAttributesValues', function ($query) use ($attributeValue) {
+                    $query->where('attributes_value_id', $attributeValue->id);
+                })
+                ->inRandomOrder()
+                ->limit(10)
+                ->get()
+            ->map(function ($product) {
+                $attribute_slug = optional(
+                    $product->ProductAttributesValues->first()
+                )->attributeValue->slug ?? null;
+
+                return [
+                    'id' => $product->id,
+                    'title' => $product->title,
+                    'slug' => $product->slug,
+                    'attribute_value_slug' => $attribute_slug,
+                    'category_title' => $product->category->title ?? null,
+                    'image' => $product->firstSortedImage ? $product->firstSortedImage->getThumbImages() : null,
+                    ];
+            })->values();
+            
+            $variantIds = RelatedProduct::where('product_id', $product->id)->pluck('variant_id');
+            $other_related_products = [];
+            if ($variantIds->isNotEmpty()) {
+                $otherRelatedProducts = RelatedProduct::with([
+                    'product' => function ($query) use ($attributeValue) {
+                        $query->select('id', 'title', 'slug')
+                            ->with([
+                                'ProductAttributesValues' => function ($q) use ($attributeValue) {
+                                    $q->select('id', 'product_id', 'product_attribute_id', 'attributes_value_id')
+                                        ->where('attributes_value_id', $attributeValue->id)
+                                        ->with([
+                                            'attributeValue:id,name,slug'
+                                        ])
+                                        ->orderBy('id');
+                                }
+                            ]);
+                    }
+                ])
+                ->whereIn('variant_id', $variantIds)
+                ->select('product_id', 'variant_id', 'title', 'group_title', 'description')
+                ->get();
+                
+                $groupedProducts = $otherRelatedProducts->groupBy('group_title');                
+                
+                foreach ($groupedProducts as $groupTitle => $items) {
+                    $options = [];                    
+                    
+                    foreach ($items as $item) {
+                        if ($item->product && $item->product->ProductAttributesValues->isNotEmpty()) {
+                            foreach ($item->product->ProductAttributesValues as $pav) {
+                                if ($pav->attributeValue) {
+                                    $options[] = [
+                                        'group_name' => $item->title,
+                                        'product_slug' => $item->product->slug,
+                                        //'product_title' => $item->product->title,
+                                        'attribute_value_slug' => $pav->attributeValue->slug,
+                                        //'attribute_value_name' => $pav->attributeValue->name,
+                                        
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                    // $formattedGroupTitle = $groupTitle . ' Options';                  
+                    // $other_related_products[$formattedGroupTitle] = $options;
+                    $other_related_products[$groupTitle] = $options;
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Product details fetched successfully',
+                'data' => [
+                    'product_details' => $productData,
+                    'attributes_value_name' => [
+                        'id' => $attributeValue->id,
+                        'title' => $attributeValue->name,
+                        'slug' => $attributeValue->slug
+                    ],                   
+                    'related_products' => $related_products,
+                    'other_related_products' => (object)$other_related_products,
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Product Details API Error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'sql' => DB::getQueryLog()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching product details',
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error',
+                'file' => config('app.debug') ? $e->getFile() : null,
+                'line' => config('app.debug') ? $e->getLine() : null
+            ], 500);
+        }
+    }
+
+    public function productDetailsOld(Request $request, $product_slug, $attribute_value)
+    {
+        try {
+            DB::enableQueryLog(); 
+            if (empty($product_slug) || empty($attribute_value)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Product slug and attribute value are required'
+                ], 400);
+            }
+            $product = Product::where('slug', $product_slug)->first();
+            if (!$product) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Product not found'
+                ], 404);
+            }
+            $product->increment('visitor_count');
+            $attributeValue = Attribute_values::where('slug', $attribute_value)->first();
+            if (!$attributeValue) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Attribute value not found'
+                ], 404);
+            }
+            $product_details = Product::with([
+                'images:id,product_id,image_path,sort_order',
+                'category:id,title,slug',
+                'attributes.attribute:id,title,slug',
+                'attributes.values.attributeValue:id,name,slug,attributes_id',
+                'additionalFeatures.feature:id,name',
+                'reviews.reviewFiles',
+            ])
+            ->leftJoin('inventories', function ($join) {
+                $join->on('products.id', '=', 'inventories.product_id')
+                    ->whereRaw('inventories.mrp = (SELECT MIN(mrp) FROM inventories WHERE product_id = products.id)');
+            })
+            ->select(
+                'products.id',
+                'products.title',
+                'products.slug',
+                'products.category_id',
+                'products.product_description',
+                'products.product_specification',
+                'products.meta_title',
+                'products.meta_description',
+                'products.video_id',
+                'inventories.mrp', 
+                'inventories.offer_rate', 
+                'inventories.purchase_rate', 
+                'inventories.sku', 
+                'inventories.stock_quantity'
+            )
+            ->where('products.slug', $product_slug)
+            ->first();
+                
+            if (!$product_details) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Product details not found'
+                ], 404);
+            }
             $product_details->setRelation(
                 'images',
                 $product_details->images->map(function ($img) {
