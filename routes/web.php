@@ -127,6 +127,7 @@ Route::group(['middleware' => ['auth']], function() {
     Route::get('product-catalog-attributes-value/{value}', [AttributeController::class, 'productCatalogWithAttributesValue'])->name('product-catalog-attributes-value');
     /**Attributes */
     /**Product route */
+    Route::get('autocomplete/products', [ProductsController::class, 'autocompleteProductsAll'])->name('autocomplete.products');
     Route::resource('product', ProductsController::class);    
     Route::post('/products/bulk-delete', [ProductsController::class, 'bulkDelete'])->name('product.bulkDelete');
     Route::post('/products/modal-image-form', [ProductsController::class, 'imageUploadModalForm'])->name('products.modal-image-form');

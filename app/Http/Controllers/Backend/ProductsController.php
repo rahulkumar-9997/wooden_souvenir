@@ -1746,5 +1746,52 @@ class ProductsController extends Controller
 
         return response()->json(['results' => $results]);
     }
+
+    public function autocompleteProductsAll(Request $request){
+        $query = $request->input('query');
+        $selectedProductIds = $request->input('selected_ids', []);
+        $startTime = microtime(true);
+        $searchTerms = explode(' ', $query);
+        $booleanQuery = '+' . implode(' +', $searchTerms);
+        $products = Product::where(function($query) use ($searchTerms, $booleanQuery) {
+            $query->whereRaw("MATCH(title) AGAINST(? IN BOOLEAN MODE)", [$booleanQuery])
+                ->orWhere(function ($query) use ($searchTerms) {
+                    foreach ($searchTerms as $term) {
+                        $query->where('title', 'like', '%' . $term . '%');
+                    }
+                });
+        })
+        ->whereNotIn('products.id', $selectedProductIds)
+        ->leftJoin('inventories', function ($join) {
+            $join->on('products.id', '=', 'inventories.product_id')
+                ->whereRaw('inventories.mrp = (SELECT MIN(mrp) FROM inventories WHERE product_id = products.id)');
+        })
+        ->select(
+            'products.id',
+            'products.title',
+            'products.hsn_code',
+            'products.gst_in_per',
+            'inventories.mrp',
+            'inventories.offer_rate',
+            'inventories.purchase_rate',
+            'inventories.sku'
+        )
+        ->limit(15)
+        ->orderBy('products.title')
+        ->get();
+
+        $endTime = microtime(true);
+        $queryTime = $endTime - $startTime;
+
+        Log::info('Autocomplete Products Query:', [
+            'query' => $query,
+            //'data' => $products,
+            'selected_ids' => $selectedProductIds,
+            'execution_time' => $queryTime . ' seconds',
+        ]);
+
+        return response()->json($products);
+
+    }
     
 }    

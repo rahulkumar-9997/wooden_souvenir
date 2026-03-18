@@ -57,7 +57,7 @@ $(document).ready(function () {
                 $loader.show();
                 $refreshIcon.hide();
                 $.ajax({
-                    url: baseUrl + "/autocomplete/products-whatsapp",
+                    url: baseUrl + "/autocomplete/products",
                     data: {
                         query: request.term,
                         page: 1,
