@@ -21,7 +21,7 @@ class CustomerControllerBackend extends Controller
         if ($request->ajax()) {
             return view('backend.pages.manage-customer.partials.customer-list', compact('data'))->render();
         }
-        //return response()->json($data['category_group']);
+        // return response()->json($data['customer_list']);
         return view('backend.pages.manage-customer.index', compact('data'));
     }
 
