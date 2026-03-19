@@ -16,6 +16,7 @@ use App\Http\Controllers\Backend\CategoryController;
 use App\Http\Controllers\Backend\SubcategoryController;
 use App\Http\Controllers\Backend\AttributeController;
 use App\Http\Controllers\Backend\ProductsController;
+use App\Http\Controllers\Backend\CustomerControllerBackend;
 use App\Http\Controllers\Backend\DatabaseController;
 use App\Http\Controllers\Backend\BannerController;
 use App\Http\Controllers\Backend\OurClientController;
@@ -152,6 +153,13 @@ Route::group(['middleware' => ['auth']], function() {
     Route::post('manage-storage/submit', [StorageController::class, 'store'])->name('manage-storage.submit');
     Route::delete('manage-storage/{id}',  [StorageController::class, 'destroy'])->name('manage-storage.delete');
     Route::post('mapped-image-to-product/submit', [StorageController::class, 'mappedImageToProductSubmit'])->name('mapped-image-to-product.submit');
+    Route::Resource('manage-customer', CustomerControllerBackend::class);
+    Route::get('/customer/import', [CustomerControllerBackend::class, 'importForm'])->name('customer.importForm');
+    Route::post('/customer/import', [CustomerControllerBackend::class, 'importFormSubmit'])->name('customer.import');
+    Route::get('customer-wishlist/{id}', [CustomerControllerBackend::class, 'showCustomerWishlist'])->name('customer-wishlist');    
+    Route::get('customer-orders/{id}', [CustomerControllerBackend::class, 'showCustomerOrdersList'])->name('customer-orders');
+
+
     Route::Resource('manage-related-product', RelatedProductController::class);    
     Route::resource('manage-banner', BannerController::class);
     Route::get('/product-autocomplete', [ProductsController::class,'productAutocomplete'])->name('product.autocomplete');

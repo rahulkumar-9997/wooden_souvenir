@@ -64,7 +64,30 @@
                </ul>
             </div>
          </li>
-
+         @php
+         $customerRoutes = ['manage-customer.index', 'manage-customer.create', 'manage-customer.edit', 'manage-customer.show'];
+         $isCustomerActive = in_array($currentRoute, $customerRoutes);
+         @endphp
+         <li class="nav-item">
+            <a class="nav-link menu-arrow {{ $isCustomerActive ? '' : 'collapsed' }} {{ $isCustomerActive ? 'active' : '' }}"
+               href="#sidebar_customer"
+               data-bs-toggle="collapse"
+               role="button"
+               aria-expanded="{{ $isCustomerActive ? 'true' : 'false' }}"
+               aria-controls="sidebar_customer">
+               <span class="nav-icon">
+                  <iconify-icon icon="solar:users-group-two-rounded-bold-duotone"></iconify-icon>
+               </span>
+               <span class="nav-text">Manage Customer</span>
+            </a>
+            <div class="collapse {{ $isCustomerActive ? 'show' : '' }}" id="sidebar_customer">
+               <ul class="nav sub-navbar-nav">
+                  <li class="sub-nav-item">
+                     <a class="sub-nav-link {{ request()->routeIs('manage-customer.*') ? 'active' : '' }}" href="{{ route('manage-customer.index') }}">Customer</a>
+                  </li>
+               </ul>
+            </div>
+         </li>
          <!-- Manage Other Section -->
          @php
          $otherRoutes = [
