@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductReviewsController;
 use App\Http\Controllers\Api\BlogController;
 use App\Http\Controllers\Api\CustomerAuthController;
+use App\Http\Controllers\Api\CustomerController;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -25,17 +26,23 @@ Route::get('blog/{slug}', [BlogController::class, 'blogDetails']);
 Route::get('product-catalog/{category}/{attribute}/{value}', [ProductController::class, 'productCatalog']);
 Route::get('products/{product_slug}/{attributes_value}', [ProductController::class, 'productDetails']);
 
-
-
-
-
-
-
-
 Route::prefix('customer')->group(function () {
-    Route::post('/send-otp', [CustomerAuthController::class, 'sendOtp']);
-    Route::post('/verify-otp', [CustomerAuthController::class, 'verifyOtpAndLogin']);
-    Route::post('/resend-otp', [CustomerAuthController::class, 'resendOtp']);
-    Route::post('/check-contact', [CustomerAuthController::class, 'checkContactExists']);
-    Route::post('/login', [CustomerAuthController::class, 'loginOrCreateAccountWithOtp']);
+    /* Public APIs */
+    Route::controller(CustomerAuthController::class)->group(function () {        
+        Route::post('/login', 'loginOrCreateAccountWithOtp');
+        Route::post('/send-otp', 'sendOtp');
+        Route::post('/verify-otp', 'verifyOtpAndLogin');
+        Route::post('/resend-otp', 'resendOtp');
+        Route::post('/check-contact', 'checkContactExists');
+        Route::post('/google-login', 'googleLogin');
+    });
+    /* Protected APIs */
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::controller(CustomerController::class)->group(function () {
+            Route::get('/profile', 'profile');
+            Route::post('/update-profile', 'updateProfile');
+            Route::post('/logout', 'logout');
+            //Route::post('/logout-all', 'logoutAll');
+        });
+    });
 });

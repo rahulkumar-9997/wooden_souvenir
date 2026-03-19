@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Google\Client;
 
 class CustomerAuthController extends Controller
 {
@@ -18,11 +19,22 @@ class CustomerAuthController extends Controller
         return $this->sendOtp($request); 
     }
 
-
     public function sendOtp(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'contact' => 'required|string',
+            'contact' => [
+                'required',
+                function ($attribute, $value, $fail) {
+                    $clean = preg_replace('/\D/', '', $value);
+
+                    $isEmail = filter_var($value, FILTER_VALIDATE_EMAIL);
+                    $isPhone = preg_match('/^[6-9]\d{9}$/', $clean);
+
+                    if (!$isEmail && !$isPhone) {
+                        $fail('Enter valid email or Indian phone number');
+                    }
+                }
+            ],
         ]);
 
         if ($validator->fails()) {
@@ -32,59 +44,71 @@ class CustomerAuthController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-        $isEmail = filter_var($request->contact, FILTER_VALIDATE_EMAIL);
+        $input = trim($request->contact);
+        $clean = preg_replace('/\D/', '', $input);
+        $isEmail = filter_var($input, FILTER_VALIDATE_EMAIL);
+        $contact = $isEmail ? $input : substr($clean, -10);
         $field = $isEmail ? 'email' : 'phone_number';
-        $customer = Customer::where($field, $request->contact)->first();
+        $customer = Customer::where($field, $contact)->first();
         $isNewUser = false;
         if (!$customer) {
             $isNewUser = true;
-            $customerData = [
-                $field => $request->contact,
+            $plainPassword = $isEmail 
+                ? explode('@', $contact)[0] . rand(100, 999)
+                : 'user' . substr($contact, -4) . rand(10, 99);
+            $customer = Customer::create([
+                $field => $contact,
                 'customer_id' => Customer::generateCustomerId(),
+                'name' => $isEmail 
+                            ? explode('@', $contact)[0] 
+                            : 'User_' . substr($contact, -4),
+                'password' => Hash::make($plainPassword),
                 'status' => 1,
                 'login_attempts' => 0
-            ];
-            if ($isEmail) {
-                $customerData['name'] = explode('@', $request->contact)[0]; 
-            } else {
-                $customerData['name'] = 'User_' . substr($request->contact, -4);
-            }            
-            $customer = Customer::create($customerData);
+            ]);
+            Log::info("Generated password for {$contact}: {$plainPassword}");
         }
         $otp = rand(100000, 999999);
         $customer->otp = $otp;
-        $customer->save();        
-        /* Store in cache with expiry (5 minutes) */
+        $customer->save();
         cache()->put('otp_' . $customer->id, $otp, now()->addMinutes(5));
         cache()->put('otp_sent_' . $customer->id, now(), now()->addMinutes(1));
-        // Send OTP via appropriate channel
         if ($isEmail) {
             $this->sendEmailOtp($customer->email, $otp);
         } else {
             $this->sendSmsOtp($customer->phone_number, $otp);
         }
-        Log::info("OTP for {$request->contact}: {$otp}");
+        Log::info("OTP for {$contact}: {$otp}");
         return response()->json([
             'success' => true,
             'message' => 'OTP sent successfully',
             'data' => [
                 'customer_id' => $customer->id,
-                'contact' => $request->contact,
+                'contact' => $contact,
                 'contact_type' => $isEmail ? 'email' : 'phone',
                 'is_new_user' => $isNewUser,
                 'otp' => env('APP_ENV') === 'local' ? $otp : null
             ]
         ]);
     }
-
     
     public function verifyOtpAndLogin(Request $request)
-    {
+    {       
         $validator = Validator::make($request->all(), [
-            'contact' => 'required|string',
-            'otp' => 'required|string|size:6',
-        ]);
+            'contact' => [
+                'required',
+                function ($attribute, $value, $fail) {
+                    $clean = preg_replace('/\D/', '', $value);
+                    $isEmail = filter_var($value, FILTER_VALIDATE_EMAIL);
+                    $isPhone = preg_match('/^[6-9]\d{9}$/', $clean);
 
+                    if (!$isEmail && !$isPhone) {
+                        $fail('Enter valid email or phone number');
+                    }
+                }
+            ],
+            'otp' => 'required|digits:6'
+        ]);
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
@@ -92,60 +116,62 @@ class CustomerAuthController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-
-        // Detect contact type
-        $isEmail = filter_var($request->contact, FILTER_VALIDATE_EMAIL);
+        $input = trim($request->contact);
+        $clean = preg_replace('/\D/', '', $input);
+        $isEmail = filter_var($input, FILTER_VALIDATE_EMAIL);
+        $contact = $isEmail ? $input : substr($clean, -10);
         $field = $isEmail ? 'email' : 'phone_number';
-
-        // Find customer
-        $customer = Customer::where($field, $request->contact)->first();
-
+        $customer = Customer::where($field, $contact)->first();
         if (!$customer) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid contact'
             ], 404);
         }
-
-        // Verify OTP
-        $cachedOtp = cache()->get('otp_' . $customer->id);
-        
-        if (!$cachedOtp || $cachedOtp != $request->otp) {
-            // Check database OTP as fallback
-            if ($customer->otp != $request->otp) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid or expired OTP'
-                ], 401);
-            }
-        }
-
-        // Check account status
         if ($customer->status != 1) {
             return response()->json([
                 'success' => false,
                 'message' => 'Account is deactivated'
             ], 403);
         }
-
-        // Clear OTP
-        $customer->otp = null;
-        $customer->last_login_at = now();
-        $customer->login_attempts = 0;
-        $customer->save();
-
-        // Clear cached OTP
+        if ($customer->login_attempts >= 5) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Too many attempts. Try again later.'
+            ], 429);
+        }
+        $cachedOtp = cache()->get('otp_' . $customer->id);
+        if (!$cachedOtp || $cachedOtp != $request->otp) {
+            if ($customer->otp != $request->otp) {
+                $customer->increment('login_attempts');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid or expired OTP'
+                ], 401);
+            }
+        }
+        if (!cache()->has('otp_' . $customer->id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'OTP expired'
+            ], 401);
+        }
+        $customer->update([
+            'otp' => null,
+            'last_login_at' => now(),
+            'login_attempts' => 0
+        ]);
         cache()->forget('otp_' . $customer->id);
-
-        // Check if profile is complete
-        $isProfileIncomplete = empty($customer->email) || empty($customer->name) || 
-                              (empty($customer->phone_number) && $isEmail) ||
-                              str_starts_with($customer->name, 'User_');
-
-        // Delete old tokens and create new one
+        $isProfileIncomplete = 
+            empty($customer->name) ||
+            (empty($customer->email) && empty($customer->phone_number)) ||
+            str_starts_with($customer->name, 'User_');
         $customer->tokens()->delete();
-        $token = $customer->createToken('auth_token', ['*'], now()->addDays(30))->plainTextToken;
-
+        $token = $customer->createToken(
+            'auth_token',
+            ['*'],
+            now()->addDays(30)
+        )->plainTextToken;
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
@@ -162,9 +188,20 @@ class CustomerAuthController extends Controller
     public function resendOtp(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'contact' => 'required|string',
-        ]);
+            'contact' => [
+                'required',
+                function ($attribute, $value, $fail) {
+                    $clean = preg_replace('/\D/', '', $value);
 
+                    $isEmail = filter_var($value, FILTER_VALIDATE_EMAIL);
+                    $isPhone = preg_match('/^[6-9]\d{9}$/', $clean);
+
+                    if (!$isEmail && !$isPhone) {
+                        $fail('Enter valid email or phone number');
+                    }
+                }
+            ],
+        ]);
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
@@ -172,59 +209,58 @@ class CustomerAuthController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-
-        $isEmail = filter_var($request->contact, FILTER_VALIDATE_EMAIL);
+        $input = trim($request->contact);
+        $clean = preg_replace('/\D/', '', $input);
+        $isEmail = filter_var($input, FILTER_VALIDATE_EMAIL);
+        $contact = $isEmail ? $input : substr($clean, -10);
         $field = $isEmail ? 'email' : 'phone_number';
-
-        $customer = Customer::where($field, $request->contact)->first();
-
+        $customer = Customer::where($field, $contact)->first();
         if (!$customer) {
             return response()->json([
                 'success' => false,
                 'message' => 'Contact not found'
             ], 404);
         }
-
-        // Rate limiting - check if OTP was sent in last 60 seconds
+        if ($customer->status != 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Account is deactivated'
+            ], 403);
+        }
+        /* Rate limiting (60 sec) */
         $lastOtpTime = cache()->get('otp_sent_' . $customer->id);
         if ($lastOtpTime && now()->diffInSeconds($lastOtpTime) < 60) {
             $waitTime = 60 - now()->diffInSeconds($lastOtpTime);
             return response()->json([
                 'success' => false,
-                'message' => "Please wait {$waitTime} seconds",
+                'message' => "Please wait {$waitTime} seconds before retrying",
                 'data' => ['wait_time' => $waitTime]
             ], 429);
         }
-
-        // Generate new OTP
         $otp = rand(100000, 999999);
-        
-        $customer->otp = $otp;
-        $customer->save();
-        
+        $customer->update([
+            'otp' => $otp
+        ]);
         cache()->put('otp_' . $customer->id, $otp, now()->addMinutes(5));
         cache()->put('otp_sent_' . $customer->id, now(), now()->addMinutes(1));
-
-        // Send OTP
         if ($isEmail) {
             $this->sendEmailOtp($customer->email, $otp);
         } else {
             $this->sendSmsOtp($customer->phone_number, $otp);
         }
-
-        Log::info("Resent OTP for {$request->contact}: {$otp}");
-
+        if (app()->environment('local')) {
+            Log::info("Resent OTP for {$contact}: {$otp}");
+        }
         return response()->json([
             'success' => true,
             'message' => 'OTP resent successfully',
             'data' => [
                 'customer_id' => $customer->id,
-                'contact' => $request->contact,
-                'otp' => env('APP_ENV') === 'local' ? $otp : null
+                'contact' => $contact,
+                'otp' => app()->environment('local') ? $otp : null
             ]
         ]);
     }
-
     
     private function sendEmailOtp($email, $otp)
     {
@@ -237,14 +273,12 @@ class CustomerAuthController extends Controller
             Log::error("Email sending failed: " . $e->getMessage());
         }
     }
-
     
     private function sendSmsOtp($phone, $otp)
     {
         // Implement your SMS gateway here
         Log::info("SMS OTP for {$phone}: {$otp}");
     }
-
     
     public function checkContactExists(Request $request)
     {
@@ -270,5 +304,86 @@ class CustomerAuthController extends Controller
                 'contact_type' => $isEmail ? 'email' : 'phone'
             ]
         ]);
+    }
+
+    public function googleLogin(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'google_id_token' => 'required|string'
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation Error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        try {
+            $client = new Client([
+                'client_id' => env('GOOGLE_CLIENT_ID')
+            ]);
+            $payload = $client->verifyIdToken($request->google_id_token);
+            if (!$payload) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid Google token'
+                ], 401);
+            }
+            $googleId = $payload['sub'];
+            $email = $payload['email'] ?? null;
+            $name = $payload['name'] ?? 'Google User';
+            $profileImg = $payload['picture'] ?? null;
+            $customer = Customer::where('google_id', $googleId)
+                ->orWhere('email', $email)
+                ->first();
+            $isNewUser = false;
+            if (!$customer) {
+                $isNewUser = true;
+                $customer = Customer::create([
+                    'name' => $name,
+                    'email' => $email,
+                    'google_id' => $googleId,
+                    'customer_id' => Customer::generateCustomerId(),
+                    'profile_img' => $profileImg,
+                    'password' => Hash::make(uniqid()),
+                    'status' => 1,
+                    'login_attempts' => 0
+                ]);
+            } else {
+                if (!$customer->google_id) {
+                    $customer->update([
+                        'google_id' => $googleId
+                    ]);
+                }
+            }
+            $isProfileIncomplete = 
+                empty($customer->name) ||
+                (empty($customer->email) && empty($customer->phone_number)) ||
+                str_starts_with($customer->name, 'User_');
+            $customer->tokens()->delete();
+            $token = $customer->createToken(
+                'auth_token',
+                ['*'],
+                now()->addDays(30)
+            )->plainTextToken;
+            return response()->json([
+                'success' => true,
+                'message' => 'Google login successful',
+                'data' => [
+                    'customer' => $customer,
+                    'access_token' => $token,
+                    'token_type' => 'Bearer',
+                    'is_profile_complete' => !$isProfileIncomplete,
+                    'is_new_user' => $isNewUser
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Google Login Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Google login failed'
+            ], 500);
+        }
     }
 }

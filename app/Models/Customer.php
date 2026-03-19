@@ -64,15 +64,11 @@ class Customer extends Authenticatable
 
     public static function generateCustomerId()
     {
-        $prefix = 'CUST';
-        $timestamp = now()->format('YmdHis');
-        $random = strtoupper(substr(uniqid(), -4));
-        $customerId = $prefix . $timestamp . $random;
-        while (self::where('customer_id', $customerId)->exists()) {
-            $random = strtoupper(substr(uniqid(), -4));
-            $customerId = $prefix . $timestamp . $random;
-        }
-        
+        $prefix = 'WS';
+        do {
+            $number = str_pad(mt_rand(0, 99999), 5, '0', STR_PAD_LEFT);
+            $customerId = $prefix . $number;
+        } while (self::where('customer_id', $customerId)->exists());
         return $customerId;
     }
 
@@ -95,5 +91,14 @@ class Customer extends Authenticatable
     public function isLocked()
     {
         return $this->login_attempts >= 5;
+    }
+
+    public function getProfileImgAttribute($value)
+    {
+        if (!$value) return null;
+        if (str_starts_with($value, 'http')) {
+            return $value;
+        }
+        return asset('storage/images/customer-profile/' . $value);
     }
 }
