@@ -16,6 +16,7 @@ use App\Http\Controllers\Backend\CategoryController;
 use App\Http\Controllers\Backend\SubcategoryController;
 use App\Http\Controllers\Backend\AttributeController;
 use App\Http\Controllers\Backend\ProductsController;
+use App\Http\Controllers\Backend\InventoryController;
 use App\Http\Controllers\Backend\CustomerControllerBackend;
 use App\Http\Controllers\Backend\DatabaseController;
 use App\Http\Controllers\Backend\BannerController;
@@ -146,7 +147,21 @@ Route::group(['middleware' => ['auth']], function() {
     Route::post('product-update-all', [ProductsController::class, 'productMultipleUpdatePageSubmit'])->name('product-update-all');    
     Route::POST('/product-update-gst/store', [ProductsController::class, 'updateHSNCodeGstFormSubmit'])->name('product-update-gst.store');
     Route::get('/autocomplete/products-storage', [ProductsController::class, 'autocompleteProductsStorage'])->name('autocomplete.products-storage');
-    /**Product route */  
+    /**Product route */ 
+    /**inventory route */
+    Route::prefix('inventory')->name('inventory.')->group(function () {
+        Route::get('/', [InventoryController::class, 'index'])->name('index');
+        Route::get('/create', [InventoryController::class, 'create'])->name('create');
+        Route::post('/', [InventoryController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [InventoryController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [InventoryController::class, 'update'])->name('update');
+        Route::delete('/{id}', [InventoryController::class, 'destroy'])->name('delete');
+        // Import / Export
+        Route::get('/export', [InventoryController::class, 'exportInventory'])->name('export');
+        Route::get('/import', [InventoryController::class, 'importInventory'])->name('import');
+        Route::post('/import', [InventoryController::class, 'inventoryImportForm'])->name('import.store');
+    });
+    /**inventory route */ 
     Route::get('manage-storage', [StorageController::class, 'index'])->name('manage-storage');
     Route::get('manage-storage/create', [StorageController::class, 'create'])->name('manage-storage.create');
     Route::post('manage-storage/comment/submit/{id}', [StorageController::class, 'storageCommentSubmit'])->name('manage-storage.comment.submit');

@@ -2,33 +2,41 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\FromCollection;
 use App\Models\Product;
+use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-
 class InventoryExport implements FromCollection, WithHeadings
 {
-    /**
-    * @return \Illuminate\Support\Collection
-    */
     public function collection()
     {
-        return Product::with('category:id,title') 
-            ->get(['id', 'title', 'category_id'])
-            ->map(function($product) {
-                $product->formatted_title = ucwords(strtolower($product->title)); 
-                $product->category_name = $product->category->title ?? 'No Category';
-                unset($product->category_id);
-                unset($product->title);
-                return $product;
+        return Product::with(['category:id,title', 'inventories'])
+            ->get()
+            ->flatMap(function ($product) {
+                if ($product->inventories->isEmpty()) {
+                    return [[
+                        'id' => $product->id,
+                        'name' => ucwords(strtolower($product->title)),
+                        'category' => $product->category->title ?? 'No Category',
+                        'mrp' => '',
+                        'offer_rate' => '',
+                        'purchase_rate' => '',
+                        'quantity' => '',
+                    ]];
+                }
+                return $product->inventories->map(function ($inv) use ($product) {
+                    return [
+                        'id' => $product->id,
+                        'name' => ucwords(strtolower($product->title)),
+                        'category' => $product->category->title ?? 'No Category',
+                        'mrp' => $inv->mrp,
+                        'offer_rate' => $inv->offer_rate,
+                        'purchase_rate' => $inv->purchase_rate,
+                        'quantity' => $inv->stock_quantity,
+                    ];
+                });
             });
     }
 
-    /**
-     * Set the headings for the Excel file
-     *
-     * @return array
-     */
     public function headings(): array
     {
         return [
@@ -40,21 +48,5 @@ class InventoryExport implements FromCollection, WithHeadings
             'Purchase Rate',
             'Quantity'
         ];
-    }
-
-    /**
-     * Transform the collection to an array format for export
-     *
-     * @return array
-     */
-    public function array(): array
-    {
-        return $this->collection()->map(function ($product) {
-            return [
-                $product->id,
-                $product->formatted_title,
-                $product->category_name,
-            ];
-        })->toArray();
     }
 }

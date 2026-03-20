@@ -10,6 +10,7 @@ class OrderStatus extends Model
         'name',
         'slug',
         'description',
+        'status',
         'color',
         'sort_order'
     ];

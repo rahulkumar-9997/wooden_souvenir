@@ -25,45 +25,71 @@
                <span class="nav-text">Dashboard</span>
             </a>
          </li>
-
          <!-- Manage Products -->
          @php
          $currentRoute = Route::currentRouteName();
-         $productRoutes = ['label', 'category', 'product.index', 'attributes', 'manage-storage'];
-         $isProductActive = in_array($currentRoute, $productRoutes);
+         $productRoutes = [
+            'label*',
+            'category*',
+            'product.*',
+            'attributes*',
+            'manage-storage*',
+            'inventory.*'
+         ];
+         $isProductActive = request()->routeIs($productRoutes);
          @endphp
          <li class="nav-item">
-            <a class="nav-link menu-arrow {{ $isProductActive ? '' : 'collapsed' }} {{ $isProductActive ? 'active' : '' }}"
+            <a class="nav-link menu-arrow {{ $isProductActive ? 'active' : 'collapsed' }}"
                href="#sidebarProducts_2"
                data-bs-toggle="collapse"
                role="button"
                aria-expanded="{{ $isProductActive ? 'true' : 'false' }}"
                aria-controls="sidebarProducts_2">
+
                <span class="nav-icon">
-                  <iconify-icon icon="solar:t-shirt-bold-duotone"></iconify-icon>
+                     <iconify-icon icon="solar:t-shirt-bold-duotone"></iconify-icon>
                </span>
+
                <span class="nav-text">Manage Products</span>
             </a>
+
             <div class="collapse {{ $isProductActive ? 'show' : '' }}" id="sidebarProducts_2">
                <ul class="nav sub-navbar-nav">
-                  <li class="sub-nav-item">
-                     <a class="sub-nav-link {{ request()->routeIs('label') ? 'active' : '' }}" href="{{ route('label') }}">Label</a>
-                  </li>
-                  <li class="sub-nav-item">
-                     <a class="sub-nav-link {{ request()->routeIs('category') ? 'active' : '' }}" href="{{ route('category') }}">Main Category</a>
-                  </li>
-                  <li class="sub-nav-item">
-                     <a class="sub-nav-link {{ request()->routeIs('product.index') ? 'active' : '' }}" href="{{ route('product.index') }}">Product</a>
-                  </li>
-                  <li class="sub-nav-item">
-                     <a class="sub-nav-link {{ request()->routeIs('attributes') ? 'active' : '' }}" href="{{ route('attributes') }}">Attributes</a>
-                  </li>
-                  <li class="sub-nav-item">
-                     <a class="sub-nav-link {{ request()->routeIs('manage-storage') ? 'active' : '' }}" href="{{ route('manage-storage') }}">Storage</a>
-                  </li>
+
+                     <li class="sub-nav-item">
+                        <a class="sub-nav-link {{ request()->routeIs('label*') ? 'active' : '' }}"
+                           href="{{ route('label') }}">Label</a>
+                     </li>
+
+                     <li class="sub-nav-item">
+                        <a class="sub-nav-link {{ request()->routeIs('category*') ? 'active' : '' }}"
+                           href="{{ route('category') }}">Main Category</a>
+                     </li>
+
+                     <li class="sub-nav-item">
+                        <a class="sub-nav-link {{ request()->routeIs('product.*') ? 'active' : '' }}"
+                           href="{{ route('product.index') }}">Product</a>
+                     </li>
+
+                     <li class="sub-nav-item">
+                        <a class="sub-nav-link {{ request()->routeIs('attributes*') ? 'active' : '' }}"
+                           href="{{ route('attributes') }}">Attributes</a>
+                     </li>
+
+                     <li class="sub-nav-item">
+                        <a class="sub-nav-link {{ request()->routeIs('manage-storage*') ? 'active' : '' }}"
+                           href="{{ route('manage-storage') }}">Storage</a>
+                     </li>
+
+                     <li class="sub-nav-item">
+                        <a class="sub-nav-link {{ request()->routeIs('inventory.*') ? 'active' : '' }}"
+                           href="{{ route('inventory.index') }}">Inventory</a>
+                     </li>
+
                </ul>
             </div>
          </li>
+         
          @php
          $customerRoutes = ['manage-customer.index', 'manage-customer.create', 'manage-customer.edit', 'manage-customer.show'];
          $isCustomerActive = in_array($currentRoute, $customerRoutes);
