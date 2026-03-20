@@ -16,7 +16,7 @@
                 <div class="card-header d-flex justify-content-between align-items-center gap-1">
                     <h4 class="card-title flex-grow-1">
                     
-                        <a href="{{route('manage-customer')}}"
+                        <a href="{{route('manage-customer.index')}}"
                             data-title="Go Back to Previous Page"
                             data-bs-toggle="tooltip"
                             title="Go Back to Previous Page"

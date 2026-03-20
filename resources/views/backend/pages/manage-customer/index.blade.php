@@ -3,8 +3,6 @@
 @section('main-content')
 @push('styles')
 @endpush
-<!-- Start Container Fluid -->
-
 <div class="container-fluid">
    <div class="row">
       <div class="col-xl-12">

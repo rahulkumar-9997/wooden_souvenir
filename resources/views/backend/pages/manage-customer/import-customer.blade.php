@@ -17,19 +17,18 @@
                 <div class="card-header d-flex justify-content-between align-items-center gap-1">
                     <h4 class="card-title flex-grow-1">
                         Import Customer
-                        <a href="{{route('manage-customer')}}"
+                        <a href="{{route('manage-customer.index')}}"
                             data-title="Go Back to Previous Page"
                             data-bs-toggle="tooltip"
                             title="Go Back to Previous Page"
                             class="btn btn-sm btn-danger">
                             << Go Back to Previous Page
-                                </a>
-
+                        </a>
                     </h4>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <h4>Exce Format (<span class="text-danger">Note : Email id unique</span>)</h4>
+                        <h4>Excel Format (<span class="text-danger">Note : Email id unique</span>)</h4>
                         <table class="table table-bordered">
                             <tr>
                                 <th>Customer Name</th>

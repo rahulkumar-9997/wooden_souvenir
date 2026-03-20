@@ -117,9 +117,9 @@ class Product extends Model
         return $this->hasOne(ProductImages::class, 'product_id')->orderBy('sort_order', 'asc');
     }
     
-    public function orderLines()
+    public function orderLine()
     {
-        return $this->hasMany(OrderLines::class, 'product_id');
+        return $this->hasMany(OrderLine::class, 'product_id');
     }
     public function label()
     {

@@ -21,7 +21,7 @@ class CustomerImport implements ToModel, WithValidation, WithHeadingRow
             ], 
             [
                 'name' => $row['customer_name'],
-                'customer_id' => $this->generateUniqueUserId($row['email']),
+                'customer_id' => Customer::generateCustomerId(),
                 'password' => Hash::make($this->generateRandomPassword()),
             ]
         );
@@ -56,15 +56,7 @@ class CustomerImport implements ToModel, WithValidation, WithHeadingRow
         ];
     }
 
-    private function generateUniqueUserId($email){
-        $userId = strtoupper(Str::random(6)) . substr($email, 0, 4);
-        do {
-            $userId = strtoupper(Str::random(6)) . substr($email, 0, 4);
-        } while (Customer::where('customer_id', $userId)->exists());
-
-        return $userId;
-    }
-
+    
     private function generateRandomPassword()
     {
         return Str::random(8);

@@ -1,96 +1,178 @@
 @extends('backend.layouts.master')
-@section('title','Customer Details')
+@section('title', 'Customer Details - ' . $customer->name)
 @section('main-content')
-@push('styles')
-<!-- <link href="{{asset('backend/assets/vendor/datatables/css/jquery.dataTables.css')}}" rel="stylesheet" type="text/css" media="screen" />
-<link href="{{asset('backend/assets/vendor/datatables/extensions/TableTools/css/dataTables.tableTools.min.css')}}" rel="stylesheet" type="text/css" media="screen" />
-<link href="{{asset('backend/assets/vendor/datatables/extensions/Responsive/css/dataTables.responsive.css')}}" rel="stylesheet" type="text/css" media="screen" />
-<link href="{{asset('backend/assets/vendor/datatables/extensions/Responsive/bootstrap/3/dataTables.bootstrap.css')}}" rel="stylesheet" type="text/css" media="screen" /> -->
-@endpush
-<!-- Start Container Fluid -->
-
 <div class="container-fluid">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h4 class="mb-0">Customer Details</h4>
+        <a href="{{ route('manage-customer.index') }}" class="btn btn-soft-secondary btn-sm">
+            <i class="ti ti-arrow-left"></i> Back to List
+        </a>
+    </div>
     <div class="row">
         <div class="col-lg-4">
             <div class="card overflow-hidden">
-                <div class="card-body">
-                    <div class="bg-primary profile-bg rounded-top p-5 position-relative mx-n3 mt-n3">
-
-                        @if(!empty($customer->profile_img))
-                        <img src="{{ asset('images/customer/'. $customer->profile_img) }}" class="avatar-lg border border-light border-3 rounded-circle position-absolute top-100 start-0 translate-middle ms-5">
-                        @else
-                        <img src="{{ asset('backend/assets/images/avatar-2.jpg') }}" class="avatar-lg border border-light border-3 rounded-circle position-absolute top-100 start-0 translate-middle ms-5">
-                        @endif
+                <div class="card-body p-0">
+                    <div class="bg-primary profile-bg rounded-top p-4 position-relative" style="height: 100px;">
+                        <div class="position-absolute" style="bottom: -40px; left: 30px;">
+                            @if(!empty($customer->profile_img))
+                                <img src="{{ $customer->profile_img }}" 
+                                     alt="{{ $customer->name }}" 
+                                     class="avatar-lg border border-light border-3 rounded-circle bg-white"
+                                     width="90" 
+                                     height="90"
+                                     style="object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                            @else
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode($customer->name) }}&color=ffffff&background=0d6efd&size=90&bold=true&length=2" 
+                                     alt="{{ $customer->name }}" 
+                                     class="avatar-lg border border-light border-3 rounded-circle bg-white"
+                                     width="90" 
+                                     height="90"
+                                     style="box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                            @endif
+                        </div>
                     </div>
-                    <div class="mt-4 pt-3">
-                        <h4 class="mb-1">
-                            {{$customer->name}}
-                            <i class="bx bxs-badge-check text-success align-middle"></i>
-                        </h4>
-                        <div class="mt-2">
+                    <div class="mt-5 p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h4 class="mb-1 fw-bold">
+                                    {{ $customer->name }}
+                                    @if($customer->status == 1)
+                                        <i class="ti ti-circle-check-filled text-success align-middle fs-5"></i>
+                                    @endif
+                                </h4>
+                                <p class="text-muted mb-0">
+                                    <i class="ti ti-id"></i> Customer ID: {{ $customer->customer_id ?? 'N/A' }}
+                                </p>
+                            </div>
+                            <span class="badge {{ $customer->status == 1 ? 'bg-success' : 'bg-danger' }} px-3 py-2">
+                                {{ $customer->status == 1 ? 'Active' : 'Inactive' }}
+                            </span>
+                        </div>
 
-                            <p class="fs-15 mb-1 mt-1">
-                                <span class="text-dark fw-semibold">Email : </span> {{$customer->email}}
-                            </p>
-                            <p class="fs-15 mb-0 mt-1">
-                                <span class="text-dark fw-semibold">Phone : </span>
-                                {{$customer->phone_number}}
-                            </p>
+                        <div class="mt-3 pt-2 border-top">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="ti ti-mail text-primary fs-5"></i>
+                                        <div>
+                                            <small class="text-muted d-block">Email Address</small>
+                                            <span class="fw-medium">{{ $customer->email ?? 'N/A' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="ti ti-phone text-primary fs-5"></i>
+                                        <div>
+                                            <small class="text-muted d-block">Phone Number</small>
+                                            <span class="fw-medium">{{ $customer->phone_number ?? 'N/A' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                @if($customer->google_id)
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="ti ti-brand-google text-primary fs-5"></i>
+                                        <div>
+                                            <small class="text-muted d-block">Google Account</small>
+                                            <span class="fw-medium text-truncate" style="max-width: 200px;">Connected</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="card-footer border-top gap-1 hstack">
-                    <a href="#!" class="btn btn-primary w-100">Send Message</a>
-                    <a href="#!" class="btn btn-light w-100">Analytics</a>
-                    <a href="#!" class="btn btn-soft-dark d-inline-flex align-items-center justify-content-center rounded avatar-sm"><i class="bx bx-edit-alt fs-18"></i></a>
+                <div class="card-footer bg-light border-top p-3">
+                    <div class="d-flex gap-2">
+                        <a href="javascript:void(0)" class="btn btn-primary flex-fill" onclick="sendMessage()">
+                            <i class="ti ti-message"></i> Message
+                        </a>
+                        <a href="{{ route('customer-orders', ['id' => $customer->id]) }}" class="btn btn-light flex-fill">
+                            <i class="ti ti-shopping-cart"></i> Orders
+                        </a>
+                        <a href="javascript:void(0)" 
+                           class="btn btn-soft-dark" 
+                           data-customerid="{{ $customer->id }}"
+                           data-editCustomer-popup="true"
+                           data-title="Edit {{ $customer->name }}"
+                           data-url="{{ route('manage-customer.edit', ['manage_customer' => $customer->id]) }}">
+                            <i class="ti ti-edit"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
-
             <div class="card">
                 <div class="card-header d-flex align-items-center justify-content-between">
-                    <div>
-                        <h4 class="card-title">Customer Details</h4>
-                    </div>
-                    <div>
-                        <span class="badge bg-success-subtle text-success px-2 py-1">Active User</span>
-                    </div>
-
+                    <h5 class="card-title mb-0">
+                        <i class="ti ti-info-circle"></i> Additional Information
+                    </h5>
+                    <span class="badge bg-info-subtle text-info px-2 py-1">
+                        <i class="ti ti-calendar"></i> 
+                        Joined: {{ $customer->created_at->format('d M, Y') }}
+                    </span>
                 </div>
-                <div class="card-body py-2">
+                <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table mb-0">
+                        <table class="table table-borderless mb-0">
                             <tbody>
                                 <tr>
-                                    <td class="px-0">
-                                        <p class="d-flex mb-0 align-items-center gap-1 fw-semibold text-dark">Account ID : </p>
-                                    </td>
-                                    <td class="text-dark fw-medium px-0">#AC-278699</td>
+                                    <td class="ps-0 text-muted" width="40%">Account ID</td>
+                                    <td class="fw-medium">#{{ $customer->customer_id ?? 'N/A' }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="px-0">
-                                        <p class="d-flex mb-0 align-items-center gap-1 fw-semibold text-dark"> Invoice Email : </p>
+                                    <td class="ps-0 text-muted">Email Verified</td>
+                                    <td>
+                                        @if($customer->email_verified_at)
+                                            <span class="badge bg-success-subtle text-success">
+                                                <i class="ti ti-circle-check"></i> Verified
+                                            </span>
+                                        @else
+                                            <span class="badge bg-warning-subtle text-warning">
+                                                <i class="ti ti-alert-circle"></i> Unverified
+                                            </span>
+                                        @endif
                                     </td>
-                                    <td class="text-dark fw-medium px-0">michaelaminer@dayrep.com</td>
                                 </tr>
                                 <tr>
-                                    <td class="px-0">
-                                        <p class="d-flex mb-0 align-items-center gap-1 fw-semibold text-dark"> Delivery Address : </p>
+                                    <td class="ps-0 text-muted">Last Login</td>
+                                    <td>
+                                        @if($customer->last_login_at)
+                                            {{ \Carbon\Carbon::parse($customer->last_login_at)->format('d M Y H:i') }}
+                                            <br>
+                                            <small class="text-muted">
+                                                ({{ \Carbon\Carbon::parse($customer->last_login_at)->diffForHumans() }})
+                                            </small>
+                                        @else
+                                            Never
+                                        @endif
                                     </td>
-                                    <td class="text-dark fw-medium px-0">62, rue des Nations Unies 22000 SAINT-BRIEUC</td>
                                 </tr>
                                 <tr>
-                                    <td class="px-0">
-                                        <p class="d-flex mb-0 align-items-center gap-1 fw-semibold text-dark"> Language : </p>
-                                    </td>
-                                    <td class="text-dark fw-medium px-0">English</td>
+                                    <td class="ps-0 text-muted">Date of Birth</td>
+                                    <td>{{ $customer->date_of_birth ? \Carbon\Carbon::parse($customer->date_of_birth)->format('d M Y') : 'N/A' }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="px-0">
-                                        <p class="d-flex mb-0 align-items-center gap-1 fw-semibold text-dark"> Latest Invoice Id : </p>
-                                    </td>
-                                    <td class="text-dark fw-medium px-0">#INV2540</td>
+                                    <td class="ps-0 text-muted">Gender</td>
+                                    <td>{{ ucfirst($customer->gender ?? 'N/A') }}</td>
                                 </tr>
-
+                                @if($defaultAddress)
+                                <tr>
+                                    <td class="ps-0 text-muted">Default Address</td>
+                                    <td>
+                                        {{ $defaultAddress->address }}, 
+                                        @if($defaultAddress->apartment) {{ $defaultAddress->apartment }}, @endif
+                                        {{ $defaultAddress->city }}, 
+                                        {{ $defaultAddress->state }} - 
+                                        {{ $defaultAddress->zip_code }}
+                                        <br>
+                                        <small class="text-muted">
+                                            <i class="ti ti-phone"></i> {{ $defaultAddress->phone_number }}
+                                        </small>
+                                    </td>
+                                </tr>
+                                @endif
                             </tbody>
                         </table>
                     </div>
@@ -99,250 +181,231 @@
         </div>
         <div class="col-lg-8">
             <div class="row">
-                <div class="col-lg-6">
+                <div class="col-sm-6">
                     <div class="card">
                         <div class="card-body">
                             <div class="d-flex align-items-center justify-content-between">
                                 <div>
-                                    <h4 class="card-title mb-2 d-flex align-items-center gap-2">Total Invoice</h4>
-                                    <p class="text-muted fw-medium fs-22 mb-0">0</p>
+                                    <p class="text-muted mb-1">Total Orders</p>
+                                    <h3 class="mb-0 fw-bold">{{ $totalOrders }}</h3>
                                 </div>
-                                <div>
-                                    <div class="avatar-md bg-primary bg-opacity-10 rounded">
-                                        <iconify-icon icon="solar:bill-list-bold-duotone" class="fs-32 text-primary avatar-title"></iconify-icon>
-                                    </div>
+                                <div class="avatar-md bg-primary bg-opacity-10 rounded">
+                                    <i class="ti ti-shopping-cart fs-32 text-primary-tw avatar-title"></i>
                                 </div>
+                            </div>
+                            <div class="mt-3">
+                                <a href="{{ route('customer-orders', ['id' => $customer->id]) }}" class="text-primary text-decoration-none">
+                                    View All Orders <i class="ti ti-arrow-right"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-6">
+                <div class="col-sm-6">
                     <div class="card">
                         <div class="card-body">
-                            <a href="{{ route('customer-orders', ['id' => $customer->id]) }}">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div>
-                                        <h4 class="card-title mb-2 d-flex align-items-center gap-2">Total Order</h4>
-                                        <p class="text-muted fw-medium fs-22 mb-0">{{$totalOrders}}</p>
-                                    </div>
-                                    <div>
-                                        <div class="avatar-md bg-primary bg-opacity-10 rounded">
-                                            <iconify-icon icon="solar:box-bold-duotone" class="fs-32 text-primary avatar-title"></iconify-icon>
-                                        </div>
-                                    </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <p class="text-muted mb-1">Total Spent</p>
+                                    <h3 class="mb-0 fw-bold">₹{{ number_format($totalSpent ?? 0, 2) }}</h3>
                                 </div>
-                            </a>
+                                <div class="avatar-md bg-success bg-opacity-10 rounded">
+                                    <i class="ti ti-currency-rupee fs-32 text-success avatar-title"></i>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <span class="text-muted">
+                                    <i class="ti ti-receipt"></i> {{ $totalInvoices ?? 0 }} Invoices
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
-
             </div>
-
             <div class="card">
-                <div class="card-header">
-                    <h4 class="card-title">Latest Five Orders </h4>
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="card-title mb-0">Recent Orders (Last 5)</h5>
+                    @if($orders->count() > 0)
+                        <a href="{{ route('customer-orders', ['id' => $customer->id]) }}" class="btn btn-sm btn-soft-primary">
+                            View All <i class="ti ti-arrow-right"></i>
+                        </a>
+                    @endif
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table align-middle mb-0 table-hover table-centered">
-                            <thead class="bg-light-subtle">
+                        <table class="table align-middle mb-0 table-hover">
+                            <thead class="bg-light">
                                 <tr>
-                                    <th>Order ID</th>
+                                    <th>Order #</th>
+                                    <th>Date</th>
                                     <th>Status</th>
-                                    <th>Total Amount</th>
-                                    <th>Order Date</th>
-                                    <th>Payment Method</th>
-                                    <th>Order Items</th>
+                                    <th>Total</th>
+                                    <th>Payment</th>
+                                    <th>Items</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @if($orders->isNotEmpty())
-                                @foreach($orders as $order)
+                                @forelse($orders as $order)
                                 <tr>
                                     <td>
-                                        <a href="{{ route('order', $order->id) }}" class="text-body">
-                                            {{ $order->order_id }}
+                                        <a href="{{ route('order.details', $order->id) }}" class="fw-semibold text-primary">
+                                            {{ $order->order_number }}
                                         </a>
                                     </td>
                                     <td>
-                                        <span class="badge bg-success-subtle text-success py-1 px-2">
-                                            {{ $order->orderStatus->status_name ?? 'Pending' }}
+                                        <span class="text-muted">
+                                            <i class="ti ti-calendar"></i> 
+                                            {{ \Carbon\Carbon::parse($order->order_date)->format('d M Y') }}
                                         </span>
                                     </td>
                                     <td>
-                                        Rs. {{ number_format($order->total_amount, 2) }}
+                                        @php
+                                            $statusColor = match(strtolower($order->orderStatus->name ?? 'pending')) {
+                                                'delivered', 'completed' => 'success',
+                                                'processing', 'confirmed' => 'info',
+                                                'cancelled' => 'danger',
+                                                'refunded' => 'warning',
+                                                default => 'secondary'
+                                            };
+                                        @endphp
+                                        <span class="badge bg-{{ $statusColor }}-subtle text-{{ $statusColor }} px-3 py-2">
+                                            {{ $order->orderStatus->name ?? 'Pending' }}
+                                        </span>
                                     </td>
                                     <td>
-                                        {{ \Carbon\Carbon::parse($order->due_date)->format('d M, Y') }}
+                                        <span class="fw-semibold">₹{{ number_format($order->grand_total, 2) }}</span>
                                     </td>
                                     <td>
-                                        {{ $order->payment_mode ?? 'N/A' }}
+                                        @if($order->payment_received)
+                                            <span class="badge bg-success-subtle text-success">
+                                                <i class="ti ti-circle-check"></i> Paid
+                                            </span>
+                                        @else
+                                            <span class="badge bg-warning-subtle text-warning">
+                                                <i class="ti ti-clock"></i> Pending
+                                            </span>
+                                        @endif
+                                        <br>
+                                        <small class="text-muted">{{ $order->payment_mode }}</small>
                                     </td>
                                     <td>
-                                        {{ $order->orderLines->count() }} 
+                                        <span class="badge bg-info-subtle text-info">
+                                            {{ $order->orderLines->count() }} items
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ route('order.details', $order->id) }}" class="btn btn-sm btn-soft-info" title="View Order">
+                                            <i class="ti ti-eye"></i>
+                                        </a>
                                     </td>
                                 </tr>
-                                @endforeach
-                                @else
+                                @empty
                                 <tr>
-                                    <td colspan="6" class="text-center">No orders found.</td>
+                                    <td colspan="7" class="text-center py-4">
+                                        <div class="text-center">
+                                            <i class="ti ti-shopping-cart-off" style="font-size: 48px; opacity: 0.3;"></i>
+                                            <h6 class="mt-3">No orders found</h6>
+                                            <p class="text-muted mb-0">This customer hasn't placed any orders yet.</p>
+                                        </div>
+                                    </td>
                                 </tr>
-                                @endif
+                                @endforelse
                             </tbody>
                         </table>
-
-
                     </div>
                 </div>
             </div>
-            <!--<div class="row">
-                <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <img src="assets/images/user-profile.png" alt="" class="img-fluid">
-                            <h4><i class="bx bxs-coin-stack text-primary"></i> 3,764 <span class="text-muted fw-medium">Points Earned</span> </h4>
-                            <p class="mb-0">Collect reward points with each purchase.</p>
-                        </div>
-                        <div class="card-footer border-top gap-1 hstack">
-                            <a href="#!" class="btn btn-primary w-100">Earn Point</a>
-                            <a href="#!" class="btn btn-light w-100">View Items</a>
-                        </div>
-                    </div>
+            @if($customer->wishlists_count > 0)
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="ti ti-heart text-danger"></i> Wishlist ({{ $customer->wishlists_count }})
+                    </h5>
                 </div>
-                <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex gap-3">
-                                <div class="avatar bg-light d-flex align-items-center justify-content-center rounded-circle">
-                                    <i class="bx bx-down-arrow-alt fs-30"></i>
-                                </div>
-                                <div class="d-block">
-                                    <h4 class="text-dark fw-medium mb-1">Payment Arrived</h4>
-                                    <p class="mb-0 text-muted">23 min ago</p>
-                                </div>
-                                <div class="ms-auto">
-                                    <h4 class="text-dark fw-medium mb-1">$ 1,340</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center gap-2">
-
-                                <img src="assets/images/users/avatar-2.jpg" alt="avatar-3" class="avatar rounded-circle">
-
-                                <div class="d-block">
-                                    <h4 class="text-dark fw-medium mb-1">Michael A. Miner</h4>
-                                    <p class="mb-0 text-muted">Welcome Back</p>
-                                </div>
-                                <div class="ms-auto">
-                                    <span class="text-muted">
-                                        <a href="#!" class="link-reset fs-3"><iconify-icon icon="solar:settings-bold"></iconify-icon></a>
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="mt-4">
-                                <div class="d-flex align-items-center">
-                                    <h5 class="text-dark mb-0">All Account <span class="text-muted fw-normal ms-1"><i class="bx bxs-circle fs-10"></i></span><span class="text-muted fw-normal ms-1">Total Balance</span></h5>
-                                    <div class="ms-auto">
-                                        <a href="#!" class="link-reset fw-medium">UTS <i class="bx bx-down-arrow-alt text-danger"></i></a>
-                                    </div>
-                                </div>
-                                <h3 class="fw-semibold mt-2 mb-0">$4,700 <span class="fs-5 text-muted ms-1">+$232</span></h3>
-                                <div id="chart2" class="apex-charts mt-3" style="min-height: 208px;">
-                                    <div id="apexchartsnqrmdv8q" class="apexcharts-canvas apexchartsnqrmdv8q apexcharts-theme-light" style="width: 320px; height: 208px;"><svg id="SvgjsSvg1055" width="320" height="208" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev" class="apexcharts-svg" xmlns:data="ApexChartsNS" transform="translate(0, 0)" style="background: transparent;">
-                                            <foreignObject x="0" y="0" width="320" height="208">
-                                                <div class="apexcharts-legend" xmlns="http://www.w3.org/1999/xhtml" style="max-height: 104px;"></div>
-                                            </foreignObject>
-                                            <rect id="SvgjsRect1059" width="0" height="0" x="0" y="0" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fefefe"></rect>
-                                            <g id="SvgjsG1098" class="apexcharts-yaxis" rel="0" transform="translate(-18, 0)"></g>
-                                            <g id="SvgjsG1057" class="apexcharts-inner apexcharts-graphical" transform="translate(0, 1)">
-                                                <defs id="SvgjsDefs1056">
-                                                    <clipPath id="gridRectMasknqrmdv8q">
-                                                        <rect id="SvgjsRect1061" width="326" height="212" x="-3" y="-3" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fff"></rect>
-                                                    </clipPath>
-                                                    <clipPath id="forecastMasknqrmdv8q"></clipPath>
-                                                    <clipPath id="nonForecastMasknqrmdv8q"></clipPath>
-                                                    <clipPath id="gridRectMarkerMasknqrmdv8q">
-                                                        <rect id="SvgjsRect1062" width="324" height="210" x="-2" y="-2" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fff"></rect>
-                                                    </clipPath>
-                                                    <linearGradient id="SvgjsLinearGradient1067" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop id="SvgjsStop1068" stop-opacity="0.4" stop-color="rgba(255,108,47,0.4)" offset="0"></stop>
-                                                        <stop id="SvgjsStop1069" stop-opacity="0" stop-color="rgba(255,182,151,0)" offset="1"></stop>
-                                                        <stop id="SvgjsStop1070" stop-opacity="0" stop-color="rgba(255,182,151,0)" offset="1"></stop>
-                                                    </linearGradient>
-                                                </defs>
-                                                <line id="SvgjsLine1060" x1="0" y1="0" x2="0" y2="206" stroke="#b6b6b6" stroke-dasharray="3" stroke-linecap="butt" class="apexcharts-xcrosshairs" x="0" y="0" width="1" height="206" fill="#b1b9c4" filter="none" fill-opacity="0.9" stroke-width="1"></line>
-                                                <g id="SvgjsG1073" class="apexcharts-grid">
-                                                    <g id="SvgjsG1074" class="apexcharts-gridlines-horizontal" style="display: none;">
-                                                        <line id="SvgjsLine1077" x1="0" y1="0" x2="320" y2="0" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line>
-                                                        <line id="SvgjsLine1078" x1="0" y1="68.66666666666667" x2="320" y2="68.66666666666667" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line>
-                                                        <line id="SvgjsLine1079" x1="0" y1="137.33333333333334" x2="320" y2="137.33333333333334" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line>
-                                                        <line id="SvgjsLine1080" x1="0" y1="206" x2="320" y2="206" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line>
-                                                    </g>
-                                                    <g id="SvgjsG1075" class="apexcharts-gridlines-vertical" style="display: none;"></g>
-                                                    <line id="SvgjsLine1082" x1="0" y1="206" x2="320" y2="206" stroke="transparent" stroke-dasharray="0" stroke-linecap="butt"></line>
-                                                    <line id="SvgjsLine1081" x1="0" y1="1" x2="0" y2="206" stroke="transparent" stroke-dasharray="0" stroke-linecap="butt"></line>
-                                                </g>
-                                                <g id="SvgjsG1076" class="apexcharts-grid-borders" style="display: none;"></g>
-                                                <g id="SvgjsG1063" class="apexcharts-area-series apexcharts-plot-series">
-                                                    <g id="SvgjsG1064" class="apexcharts-series" zIndex="0" seriesName="series-1" data:longestSeries="true" rel="1" data:realIndex="0">
-                                                        <path id="SvgjsPath1071" d="M 0 206 L 0 148.77777777777777C 11.2 148.77777777777777 20.8 54.93333333333334 32 54.93333333333334C 43.2 54.93333333333334 52.8 112.15555555555555 64 112.15555555555555C 75.2 112.15555555555555 84.8 2.288888888888863 96 2.288888888888863C 107.2 2.288888888888863 116.8 61.79999999999998 128 61.79999999999998C 139.2 61.79999999999998 148.8 148.77777777777777 160 148.77777777777777C 171.2 148.77777777777777 180.8 105.28888888888888 192 105.28888888888888C 203.2 105.28888888888888 212.8 178.53333333333333 224 178.53333333333333C 235.2 178.53333333333333 244.8 123.6 256 123.6C 267.2 123.6 276.8 185.4 288 185.4C 299.2 185.4 308.8 82.39999999999999 320 82.39999999999999C 320 82.39999999999999 320 82.39999999999999 320 206M 320 82.39999999999999z" fill="url(#SvgjsLinearGradient1067)" fill-opacity="1" stroke-opacity="1" stroke-linecap="butt" stroke-width="0" stroke-dasharray="0" class="apexcharts-area" index="0" clip-path="url(#gridRectMasknqrmdv8q)" pathTo="M 0 206 L 0 148.77777777777777C 11.2 148.77777777777777 20.8 54.93333333333334 32 54.93333333333334C 43.2 54.93333333333334 52.8 112.15555555555555 64 112.15555555555555C 75.2 112.15555555555555 84.8 2.288888888888863 96 2.288888888888863C 107.2 2.288888888888863 116.8 61.79999999999998 128 61.79999999999998C 139.2 61.79999999999998 148.8 148.77777777777777 160 148.77777777777777C 171.2 148.77777777777777 180.8 105.28888888888888 192 105.28888888888888C 203.2 105.28888888888888 212.8 178.53333333333333 224 178.53333333333333C 235.2 178.53333333333333 244.8 123.6 256 123.6C 267.2 123.6 276.8 185.4 288 185.4C 299.2 185.4 308.8 82.39999999999999 320 82.39999999999999C 320 82.39999999999999 320 82.39999999999999 320 206M 320 82.39999999999999z" pathFrom="M -1 206 L -1 206 L 32 206 L 64 206 L 96 206 L 128 206 L 160 206 L 192 206 L 224 206 L 256 206 L 288 206 L 320 206"></path>
-                                                        <path id="SvgjsPath1072" d="M 0 148.77777777777777C 11.2 148.77777777777777 20.8 54.93333333333334 32 54.93333333333334C 43.2 54.93333333333334 52.8 112.15555555555555 64 112.15555555555555C 75.2 112.15555555555555 84.8 2.288888888888863 96 2.288888888888863C 107.2 2.288888888888863 116.8 61.79999999999998 128 61.79999999999998C 139.2 61.79999999999998 148.8 148.77777777777777 160 148.77777777777777C 171.2 148.77777777777777 180.8 105.28888888888888 192 105.28888888888888C 203.2 105.28888888888888 212.8 178.53333333333333 224 178.53333333333333C 235.2 178.53333333333333 244.8 123.6 256 123.6C 267.2 123.6 276.8 185.4 288 185.4C 299.2 185.4 308.8 82.39999999999999 320 82.39999999999999" fill="none" fill-opacity="1" stroke="#ff6c2f" stroke-opacity="1" stroke-linecap="butt" stroke-width="2" stroke-dasharray="0" class="apexcharts-area" index="0" clip-path="url(#gridRectMasknqrmdv8q)" pathTo="M 0 148.77777777777777C 11.2 148.77777777777777 20.8 54.93333333333334 32 54.93333333333334C 43.2 54.93333333333334 52.8 112.15555555555555 64 112.15555555555555C 75.2 112.15555555555555 84.8 2.288888888888863 96 2.288888888888863C 107.2 2.288888888888863 116.8 61.79999999999998 128 61.79999999999998C 139.2 61.79999999999998 148.8 148.77777777777777 160 148.77777777777777C 171.2 148.77777777777777 180.8 105.28888888888888 192 105.28888888888888C 203.2 105.28888888888888 212.8 178.53333333333333 224 178.53333333333333C 235.2 178.53333333333333 244.8 123.6 256 123.6C 267.2 123.6 276.8 185.4 288 185.4C 299.2 185.4 308.8 82.39999999999999 320 82.39999999999999" pathFrom="M -1 206 L -1 206 L 32 206 L 64 206 L 96 206 L 128 206 L 160 206 L 192 206 L 224 206 L 256 206 L 288 206 L 320 206" fill-rule="evenodd"></path>
-                                                        <g id="SvgjsG1065" class="apexcharts-series-markers-wrap apexcharts-hidden-element-shown" data:realIndex="0">
-                                                            <g class="apexcharts-series-markers">
-                                                                <circle id="SvgjsCircle1102" r="0" cx="0" cy="0" class="apexcharts-marker wsp0tgx9t no-pointer-events" stroke="#ffffff" fill="#ff6c2f" fill-opacity="1" stroke-width="2" stroke-opacity="0.9" default-marker-size="0"></circle>
-                                                            </g>
-                                                        </g>
-                                                    </g>
-                                                    <g id="SvgjsG1066" class="apexcharts-datalabels" data:realIndex="0"></g>
-                                                </g>
-                                                <line id="SvgjsLine1083" x1="0" y1="0" x2="320" y2="0" stroke="#b6b6b6" stroke-dasharray="0" stroke-width="1" stroke-linecap="butt" class="apexcharts-ycrosshairs"></line>
-                                                <line id="SvgjsLine1084" x1="0" y1="0" x2="320" y2="0" stroke-dasharray="0" stroke-width="0" stroke-linecap="butt" class="apexcharts-ycrosshairs-hidden"></line>
-                                                <g id="SvgjsG1085" class="apexcharts-xaxis" transform="translate(0, 0)">
-                                                    <g id="SvgjsG1086" class="apexcharts-xaxis-texts-g" transform="translate(0, -4)"></g>
-                                                </g>
-                                                <g id="SvgjsG1099" class="apexcharts-yaxis-annotations"></g>
-                                                <g id="SvgjsG1100" class="apexcharts-xaxis-annotations"></g>
-                                                <g id="SvgjsG1101" class="apexcharts-point-annotations"></g>
-                                            </g>
-                                        </svg>
-                                        <div class="apexcharts-tooltip apexcharts-theme-light">
-                                            <div class="apexcharts-tooltip-series-group" style="order: 1;"><span class="apexcharts-tooltip-marker" style="background-color: rgb(255, 108, 47);"></span>
-                                                <div class="apexcharts-tooltip-text" style="font-family: Helvetica, Arial, sans-serif; font-size: 12px;">
-                                                    <div class="apexcharts-tooltip-y-group"><span class="apexcharts-tooltip-text-y-label"></span><span class="apexcharts-tooltip-text-y-value"></span></div>
-                                                    <div class="apexcharts-tooltip-goals-group"><span class="apexcharts-tooltip-text-goals-label"></span><span class="apexcharts-tooltip-text-goals-value"></span></div>
-                                                    <div class="apexcharts-tooltip-z-group"><span class="apexcharts-tooltip-text-z-label"></span><span class="apexcharts-tooltip-text-z-value"></span></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="apexcharts-yaxistooltip apexcharts-yaxistooltip-0 apexcharts-yaxistooltip-left apexcharts-theme-light">
-                                            <div class="apexcharts-yaxistooltip-text"></div>
-                                        </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        @foreach($customer->wishlists()->with('product')->latest()->take(3)->get() as $wishlist)
+                        <div class="col-md-4">
+                            <div class="border rounded p-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    @if($wishlist->product && $wishlist->product->images->first())
+                                        <img src="{{ $wishlist->product->images->first()->image_url }}" 
+                                             alt="{{ $wishlist->product->title }}" 
+                                             width="40" height="40" 
+                                             style="object-fit: cover;" 
+                                             class="rounded">
+                                    @else
+                                        <div class="bg-light rounded" style="width: 40px; height: 40px;"></div>
+                                    @endif
+                                    <div class="small">
+                                        <span class="d-block text-truncate" style="max-width: 120px;">
+                                            {{ $wishlist->product->title ?? 'Product' }}
+                                        </span>
+                                        <span class="text-muted">₹{{ number_format($wishlist->product->price ?? 0, 2) }}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="card-footer border-top gap-1 hstack">
-                            <a href="#!" class="btn btn-primary w-100">Send</a>
-                            <a href="#!" class="btn btn-light w-100">Receive</a>
-                            <a href="#!" class="btn btn-soft-dark d-inline-flex align-items-center justify-content-center rounded avatar-sm"><i class="bx bx-plus fs-18"></i></a>
-                        </div>
+                        @endforeach
                     </div>
-
-
+                    @if($customer->wishlists_count > 3)
+                    <div class="mt-2 text-center">
+                        <a href="{{ route('customer-wishlist', ['id' => $customer->id]) }}" class="btn btn-sm btn-link">
+                            View all {{ $customer->wishlists_count }} items
+                        </a>
+                    </div>
+                    @endif
                 </div>
-            </div>-->
+            </div>
+            @endif
         </div>
     </div>
 </div>
-<!-- End Container Fluid -->
-<!-- Modal -->
-@include('backend.layouts.common-modal-form')
-<!-- modal--->
+
+<!-- Message Modal -->
+<div class="modal fade" id="messageModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send Message to {{ $customer->name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="messageForm">
+                    <div class="mb-3">
+                        <label class="form-label">Subject</label>
+                        <input type="text" class="form-control" name="subject" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-control" name="message" rows="4" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="sendMessageSubmit()">Send Message</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
+
 @push('scripts')
-
-
+<script>
+    function sendMessage() {
+        $('#messageModal').modal('show');
+    }
+        function sendMessageSubmit() {
+        var formData = $('#messageForm').serialize();
+        alert('Message sent successfully!');
+        $('#messageModal').modal('hide');
+        $('#messageForm')[0].reset();
+    }
+    $(document).ready(function() {
+        $('[data-bs-toggle="tooltip"]').tooltip();
+    });
+</script>
 @endpush

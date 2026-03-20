@@ -34,7 +34,7 @@ $(document).ready(function () {
 
       $.ajax({
          url: url,
-         type: 'post',
+         type: 'get',
          data: data,
          success: function (data) {
             $('#commanModel .render-data').html(data.form);
