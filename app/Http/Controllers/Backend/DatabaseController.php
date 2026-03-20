@@ -7,15 +7,30 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 class DatabaseController extends Controller
 {
+    // public function showTables()
+    // {
+    //     $tables = DB::select('SHOW TABLES');
+    //     $database = env('DB_DATABASE');
+    //     $tableNames = array_map(function ($table) use ($database) {
+    //         return $table->{'Tables_in_' . $database};
+    //     }, $tables);
+
+    //     return view('backend.pages.database.index', compact('tableNames'));
+    // }
     public function showTables()
     {
         $tables = DB::select('SHOW TABLES');
         $database = env('DB_DATABASE');
-        $tableNames = array_map(function ($table) use ($database) {
-            return $table->{'Tables_in_' . $database};
-        }, $tables);
-
-        return view('backend.pages.database.index', compact('tableNames'));
+        $tableData = [];
+        foreach ($tables as $table) {
+            $tableName = $table->{'Tables_in_' . $database};
+            $count = DB::table($tableName)->count();
+            $tableData[] = [
+                'name' => $tableName,
+                'count' => $count
+            ];
+        }
+        return view('backend.pages.database.index', compact('tableData'));
     }
 
     public function truncateTables(Request $request){

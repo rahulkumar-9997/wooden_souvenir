@@ -114,6 +114,49 @@
                </ul>
             </div>
          </li>
+
+         @php
+         $currentRoute = Route::currentRouteName();
+
+         $orderRoutes = [
+            'order-list*',
+            'order-details*',
+            'edit-order*',
+            'update-order-status*',
+            'download-invoice*'
+         ];
+
+         $isOrderActive = request()->routeIs($orderRoutes);
+         @endphp
+
+         <li class="nav-item">
+            <a class="nav-link menu-arrow {{ $isOrderActive ? 'active' : 'collapsed' }}"
+               href="#sidebarOrders"
+               data-bs-toggle="collapse"
+               role="button"
+               aria-expanded="{{ $isOrderActive ? 'true' : 'false' }}"
+               aria-controls="sidebarOrders">
+
+               <span class="nav-icon">
+                     <iconify-icon icon="solar:cart-large-bold-duotone"></iconify-icon>
+               </span>
+
+               <span class="nav-text">Manage Orders</span>
+            </a>
+
+            <div class="collapse {{ $isOrderActive ? 'show' : '' }}" id="sidebarOrders">
+               <ul class="nav sub-navbar-nav">
+
+                     <li class="sub-nav-item">
+                        <a class="sub-nav-link {{ request()->routeIs('order-list*') ? 'active' : '' }}"
+                           href="{{ route('order-list') }}">
+                           Order List
+                        </a>
+                     </li>
+
+               </ul>
+            </div>
+         </li>
          <!-- Manage Other Section -->
          @php
          $otherRoutes = [

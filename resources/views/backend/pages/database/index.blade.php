@@ -30,17 +30,22 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($tableNames as $table)
+                            @foreach($tableData as $table)
                                 <tr>
                                     <td>
-                                        @if(in_array($table, ['users', 'migrations', 'model_has_permissions', 'model_has_roles', 'permissions', 'role_has_permissions', 'roles', 'order_status', 'sessions', 'password_resets', 'failed_jobs']))
+                                        @if(in_array($table['name'], ['users', 'migrations', 'model_has_permissions', 'model_has_roles', 'permissions', 'role_has_permissions', 'roles', 'order_status', 'sessions', 'password_resets', 'failed_jobs']))
                                             <input class="form-check-input" type="checkbox" disabled>
                                         @else
-                                            <input type="checkbox" class="form-check-input table-checkbox" name="tables[]" value="{{ $table }}">
+                                            <input type="checkbox" class="form-check-input table-checkbox" name="tables[]" value="{{ $table['name'] }}">
                                         @endif
-                                    
                                     </td>
-                                    <td>{{ $table }}</td>
+
+                                    <td>
+                                        {{ $table['name'] }} 
+                                        <span class="badge bg-info ms-2">
+                                            {{ $table['count'] }} rows
+                                        </span>
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>

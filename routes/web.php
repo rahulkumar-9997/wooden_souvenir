@@ -17,6 +17,7 @@ use App\Http\Controllers\Backend\SubcategoryController;
 use App\Http\Controllers\Backend\AttributeController;
 use App\Http\Controllers\Backend\ProductsController;
 use App\Http\Controllers\Backend\InventoryController;
+use App\Http\Controllers\Backend\OrderControllerBackend;
 use App\Http\Controllers\Backend\CustomerControllerBackend;
 use App\Http\Controllers\Backend\DatabaseController;
 use App\Http\Controllers\Backend\BannerController;
@@ -161,7 +162,15 @@ Route::group(['middleware' => ['auth']], function() {
         Route::get('/import', [InventoryController::class, 'importInventory'])->name('import');
         Route::post('/import', [InventoryController::class, 'inventoryImportForm'])->name('import.store');
     });
-    /**inventory route */ 
+    /**inventory route */
+    /**Order Route */
+    Route::get('order-list', [OrderControllerBackend::class, 'showAllOrderList'])->name('order-list');
+    Route::get('order-details/{id}', [OrderControllerBackend::class, 'showOrderDetails'])->name('order-details');
+    Route::get('edit-order/{id}', [OrderControllerBackend::class, 'editOrder'])->name('edit-order');
+    Route::delete('order-list/destroy/{id}', [OrderControllerBackend::class, 'orderDelete'])->name('order-list.destroy');
+    Route::post('update-order-status/{orderId}', [OrderControllerBackend::class, 'updateOrderStatus'])->name('update-order-status');
+    Route::get('download-invoice/{orderId}', [OrderControllerBackend::class, 'downloadInvoice'])->name('download-invoice'); 
+    /**Order Route */ 
     Route::get('manage-storage', [StorageController::class, 'index'])->name('manage-storage');
     Route::get('manage-storage/create', [StorageController::class, 'create'])->name('manage-storage.create');
     Route::post('manage-storage/comment/submit/{id}', [StorageController::class, 'storageCommentSubmit'])->name('manage-storage.comment.submit');
