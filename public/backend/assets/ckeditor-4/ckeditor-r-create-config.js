@@ -102,17 +102,19 @@ CKEDITOR.plugins.add("bootstrapgrid", {
 });
 /*Bootstrap grid plugin */
 /*Bootstrap grid plugin - END */
+const csrfToken = window.csrfToken || '';
 document.querySelectorAll(".ckeditor4").forEach(function (el) {
     CKEDITOR.replace(el, {
         removePlugins: "exportpdf",
         allowedContent: true,
         extraAllowedContent: "*(*);*{*}",
         extraPlugins: "uploadimage, sourcearea, justify, div, bootstrapgrid",
-        filebrowserUploadUrl: window.CKEDITOR_ROUTES.upload,
-        filebrowserImageUploadUrl: window.CKEDITOR_ROUTES.upload,
+        filebrowserUploadUrl: window.CKEDITOR_ROUTES.upload + '?_token=' + csrfToken,
+        filebrowserImageUploadUrl: window.CKEDITOR_ROUTES.upload + '?_token=' + csrfToken,
         filebrowserUploadMethod: "form",
-        imageUploadUrl: window.CKEDITOR_ROUTES.upload,
-        baseHref: "{{ url('/') }}/",
+        imageUploadUrl: window.CKEDITOR_ROUTES.upload + '?_token=' + csrfToken,
+        
+        baseHref: window.location.origin + "/",
         contentsCss: [
             CKEDITOR.basePath + 'contents.css',
             'https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css'

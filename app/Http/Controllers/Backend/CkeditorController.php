@@ -11,17 +11,26 @@ use Illuminate\Support\Facades\Log;
 
 class CkeditorController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('permission:upload ckeditor images')->only('upload');
-        $this->middleware('permission:view ckeditor images')->only('imageList');
-    }
-
     public function upload(Request $request)
     {
+        Log::info('CKEditor upload request', [
+            'has_file' => $request->hasFile('upload'),
+            'all_files' => $request->allFiles(),
+            'has_token' => $request->has('_token'),
+            'method' => $request->method()
+        ]);
+        
         if ($request->hasFile('upload')) {
+
             try {
-                $imageFile = $request->file('upload');
+                $imageFile = $request->file('upload');               
+                if (!$imageFile->isValid()) {
+                    throw new \Exception('Invalid file upload. Error: ' . $imageFile->getError());
+                }
+                if (!in_array($imageFile->getMimeType(), ['image/jpeg', 'image/png', 'image/gif', 'image/webp'])) {
+                    throw new \Exception('Invalid file type. Only images are allowed.');
+                }
+
                 $originalName = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $baseName = ImageHelper::generateFileName($originalName, 'ckeditor');
                 $fileName = ImageHelper::uploadSingleImageWebpOnly(
