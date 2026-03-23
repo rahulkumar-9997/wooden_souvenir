@@ -7,8 +7,7 @@
       </a>
       <a href="{{route('dashboard')}}" class="logo-light" style="text-align: center;">
          <img src="{{asset('backend/assets/fav-icon.png')}}" class="logo-sm" alt="logo sm">
-         <img src="{{asset('backend/assets/logo.png')}}" style="width: 121px; height: 45px;" class="logo-lg"
-            alt="logo light">
+         <img src="{{asset('backend/assets/logo.png')}}" style="width: 121px; height: 45px;" class="logo-lg" alt="logo light">
       </a>
    </div>
    <button type="button" class="button-sm-hover text-info" aria-label="Show Full Sidebar">
