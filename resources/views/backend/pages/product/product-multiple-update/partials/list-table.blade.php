@@ -83,9 +83,8 @@
                 @elseif ($criteria == 'product-description')
                 <td>
                     <input type="hidden" name="product_id[]" value="{{ $product->id }}">
-                    <div class="mb-0">
-                        <div class="snow-editor" style="height: 200px; width: 100%;">{!! $product->product_description !!}</div>
-                        <textarea name="products_description[]" class="hidden-textarea" style="display:none;">
+                    <div class="mb-0">                        
+                        <textarea name="products_description[]" class="hidden-textarea ckeditor4">
                             {!! $product->product_description !!}
                         </textarea>
                     </div>
@@ -94,9 +93,8 @@
                 @elseif ($criteria == 'product-specification')
                 <td>
                     <input type="hidden" name="product_id[]" value="{{ $product->id }}">
-                    <div class="mb-0">
-                        <div class="snow-editor" style="height: 200px; width: 100%;">{!! $product->product_specification !!}</div>
-                        <textarea name="products_specification[]" class="hidden-textarea" style="display:none;">
+                    <div class="mb-0">                        
+                        <textarea name="products_specification[]" class="hidden-textarea ckeditor4">
                             {!! $product->product_specification !!}
                         </textarea>
                     </div>
