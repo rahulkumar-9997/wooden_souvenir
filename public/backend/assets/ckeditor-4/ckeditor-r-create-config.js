@@ -3,9 +3,7 @@
 /*Bootstrap grid plugin */
 CKEDITOR.plugins.add("bootstrapgrid", {
     init: function (editor) {
-        // Add CSS to editor's document
         editor.on('instanceReady', function() {
-            // Add Bootstrap grid CSS if not already present
             if (editor.document) {
                 var style = editor.document.createElement('style');
                 style.setAttribute('type', 'text/css');
@@ -102,7 +100,91 @@ CKEDITOR.plugins.add("bootstrapgrid", {
 });
 /*Bootstrap grid plugin */
 /*Bootstrap grid plugin - END */
+
+/* Get CSRF token from window object (set in Blade) */
 const csrfToken = window.csrfToken || '';
+/* Add CSRF token to all fetch requests */
+window.deleteImageWithCSRF = async function(imageName, element) {
+    if (!confirm('Are you sure you want to delete this image? This action cannot be undone.')) {
+        return;
+    }    
+    try {
+        const response = await fetch(window.CKEDITOR_ROUTES.delete, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                image: imageName,
+                _token: csrfToken
+            })
+        });
+        const result = await response.json();        
+        if (response.ok && result.success) {
+            if (element) {
+                const imageContainer = element.closest('.gallery-image-container');
+                if (imageContainer) {
+                    imageContainer.remove();
+                } else {
+                    element.remove();
+                }
+            }     
+            Toastify({
+                text: "Image deleted successfully",
+                duration: 10000,
+                gravity: "top",
+                position: "right",
+                className: "bg-success",
+                escapeMarkup: false,
+                close: true,
+                onClick: function () { }
+            }).showToast();   
+        } else {
+            throw new Error(result.error || 'Failed to delete image');
+        }
+    } catch (error) {
+        console.error('Error deleting image:', error);
+        Toastify({
+            text: 'Failed to delete image: ' + error.message,
+            duration: 10000,
+            gravity: "top",
+            position: "right",
+            className: "bg-danger",
+            escapeMarkup: false,
+            close: true,
+            onClick: function () { }
+        }).showToast();   
+    }
+};
+
+/*Add CSS animations for notifications */
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
 document.querySelectorAll(".ckeditor4").forEach(function (el) {
     CKEDITOR.replace(el, {
         removePlugins: "exportpdf",
@@ -112,8 +194,7 @@ document.querySelectorAll(".ckeditor4").forEach(function (el) {
         filebrowserUploadUrl: window.CKEDITOR_ROUTES.upload + '?_token=' + csrfToken,
         filebrowserImageUploadUrl: window.CKEDITOR_ROUTES.upload + '?_token=' + csrfToken,
         filebrowserUploadMethod: "form",
-        imageUploadUrl: window.CKEDITOR_ROUTES.upload + '?_token=' + csrfToken,
-        
+        imageUploadUrl: window.CKEDITOR_ROUTES.upload + '?_token=' + csrfToken,        
         baseHref: window.location.origin + "/",
         contentsCss: [
             CKEDITOR.basePath + 'contents.css',
@@ -152,9 +233,7 @@ CKEDITOR.on("dialogDefinition", function (ev) {
 function loadSimpleGallery() {
     var container = document.getElementById("simple-image-gallery");
     if (!container) return;
-
     container.innerHTML = "Loading images...";
-
     fetch(window.CKEDITOR_ROUTES.imagelist)
         .then((response) => {
             if (!response.ok) throw new Error("Network response was not ok");
@@ -162,29 +241,36 @@ function loadSimpleGallery() {
         })
         .then((images) => {
             if (images && images.length > 0) {
-                let html =
-                    '<div style="display: flex; flex-wrap: wrap; gap: 5px; justify-content: center;">';
-                images.slice(0, 8).forEach((image) => {
+                let html = '<div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start;">';
+                images.forEach((image) => {
                     html += `
-                        <img src="${image.url}" 
-                             style="width: 60px; height: 45px; object-fit: cover; cursor: pointer; border: 2px solid transparent; border-radius: 3px;" 
-                             onclick="setImageUrl('${image.url}')"
-                             onmouseover="this.style.borderColor='#007bff'"
-                             onmouseout="this.style.borderColor='transparent'"
-                             title="${image.name}">
+                        <div class="gallery-image-container" style="position: relative; width: 80px; margin: 5px;">
+                            <img src="${image.url}" 
+                                 style="width: 80px; height: 60px; object-fit: cover; cursor: pointer; border: 2px solid transparent; border-radius: 4px;" 
+                                 onclick="setImageUrl('${image.url}')"
+                                 onmouseover="this.style.borderColor='#007bff'"
+                                 onmouseout="this.style.borderColor='transparent'"
+                                 title="Click to insert">
+                            <button 
+                                onclick="deleteImageWithCSRF('${image.name}', this)"
+                                style="position: absolute; top: -8px; right: -8px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"
+                                onmouseover="this.style.background='#c82333'"
+                                onmouseout="this.style.background='#dc3545'"
+                                title="Delete image">
+                                ×
+                            </button>
+                        </div>
                     `;
                 });
-                html += "</div>";
+                html += '</div>';
                 container.innerHTML = html;
             } else {
-                container.innerHTML =
-                    '<div style="color: #666; padding: 20px;">No images found. Upload images using the Upload tab.</div>';
+                container.innerHTML = '<div style="color: #666; padding: 20px; text-align: center;">No images found. Upload images using the Upload tab.</div>';
             }
         })
         .catch((error) => {
             console.error("Error loading images:", error);
-            container.innerHTML =
-                '<div style="color: red; padding: 20px;">Error loading images. Please try again.</div>';
+            container.innerHTML = '<div style="color: red; padding: 20px; text-align: center;">Error loading images. Please refresh the page.</div>';
         });
 }
 

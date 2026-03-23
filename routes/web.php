@@ -195,6 +195,6 @@ Route::group(['middleware' => ['auth']], function() {
     Route::middleware(['auth'])->group(function () {
     Route::post('/ckeditor/upload', [CkeditorController::class, 'upload'])->name('ckeditor.upload');
     Route::get('/ckeditor/images', [CkeditorController::class, 'imageList'])->name('ckeditor.images');
-    Route::delete('/ckeditor/images', [CkeditorController::class, 'deleteImage'])->name('ckeditor.delete');
+    Route::delete('/ckeditor/image', [CkeditorController::class, 'deleteImage'])->name('ckeditor.delete');
 });
 });

@@ -132,22 +132,33 @@ class CkeditorController extends Controller
     public function deleteImage(Request $request)
     {
         try {
-            $imageName = $request->input('image');
-            
+            $imageName = $request->input('image');            
             if (empty($imageName)) {
                 return response()->json(['error' => 'Image name required'], 400);
             }
-            $deleted = ImageHelper::deleteSingleImage($imageName, 'ckeditor');
-            
+            if (strpos($imageName, '..') !== false || strpos($imageName, '/') !== false) {
+                return response()->json(['error' => 'Invalid image name'], 400);
+            }            
+            Log::info('Attempting to delete image', ['image' => $imageName]);            
+            $deleted = ImageHelper::deleteSingleImage($imageName, 'ckeditor');            
             if ($deleted) {
-                return response()->json(['success' => true, 'message' => 'Image deleted']);
+                Log::info('Image deleted successfully', ['image' => $imageName]);
+                return response()->json([
+                    'success' => true, 
+                    'message' => 'Image deleted successfully'
+                ]);
             } else {
-                return response()->json(['error' => 'Image not found'], 404);
+                Log::warning('Image not found for deletion', ['image' => $imageName]);
+                return response()->json([
+                    'error' => 'Image not found'
+                ], 404);
             }
             
         } catch (\Exception $e) {
             Log::error('CKEditor delete failed: ' . $e->getMessage());
-            return response()->json(['error' => 'Delete failed'], 500);
+            return response()->json([
+                'error' => 'Delete failed: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

@@ -188,7 +188,8 @@
 <script>
 window.CKEDITOR_ROUTES = {
     upload: "{{ route('ckeditor.upload') }}",
-    imagelist: "{{ route('ckeditor.images') }}"
+    imagelist: "{{ route('ckeditor.images') }}",
+    delete: "{{ route('ckeditor.delete') }}"
 };
 window.csrfToken = "{{ csrf_token() }}";
 </script>
