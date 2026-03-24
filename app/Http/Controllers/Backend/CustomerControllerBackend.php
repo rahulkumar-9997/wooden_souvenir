@@ -29,7 +29,6 @@ class CustomerControllerBackend extends Controller
 
         return view('backend.pages.manage-customer.index', compact('data'));
     }
-
     /**
      * Display customer details
      */
@@ -91,7 +90,6 @@ class CustomerControllerBackend extends Controller
     {
         try {
             $customer = Customer::findOrFail($customer_id);
-
             $orders = Order::with([
                 'orderStatus',
                 'shippingAddress',
